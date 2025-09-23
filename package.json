@@ -17,7 +17,7 @@
     "@types/fhir": "^0.0.36",
     "autoprefixer": "^10.4.21",
     "fhir": "^4.11.1",
-    "next": "15.0.3",
+    "next": "^15.5.4",
     "react": "^18",
     "react-dom": "^18"
   },
