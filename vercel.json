@@ -1,0 +1,21 @@
+{
+  "name": "plumly",
+  "version": 2,
+  "build": {
+    "env": {
+      "ANTHROPIC_API_KEY": "@anthropic_api_key",
+      "FHIR_SERVER_URL": "https://hapi.fhir.org/baseR4",
+      "NEXT_PUBLIC_FHIR_SERVER_URL": "https://hapi.fhir.org/baseR4"
+    }
+  },
+  "env": {
+    "ANTHROPIC_API_KEY": "@anthropic_api_key",
+    "FHIR_SERVER_URL": "https://hapi.fhir.org/baseR4",
+    "NEXT_PUBLIC_FHIR_SERVER_URL": "https://hapi.fhir.org/baseR4"
+  },
+  "functions": {
+    "src/app/api/**/*.ts": {
+      "maxDuration": 30
+    }
+  }
+}
