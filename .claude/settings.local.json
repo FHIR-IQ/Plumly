@@ -18,7 +18,9 @@
       "Bash(npm run dev:*)",
       "Bash(npm uninstall:*)",
       "WebFetch(domain:ravatar.com)",
-      "WebFetch(domain:api.a2e.ai)"
+      "WebFetch(domain:api.a2e.ai)",
+      "WebFetch(domain:www.npmjs.com)",
+      "WebFetch(domain:medium.com)"
     ],
     "deny": [],
     "ask": []
