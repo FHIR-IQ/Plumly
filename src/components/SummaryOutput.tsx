@@ -2,21 +2,7 @@
 
 import React, { useState } from 'react'
 import TextToSpeechPlayer from './TextToSpeechPlayer'
-import dynamic from 'next/dynamic'
-
-// Dynamically import HealthcareAvatar with loading fallback
-const HealthcareAvatar = dynamic(() => import('./HealthcareAvatar'), {
-  loading: () => (
-    <div className="flex items-center justify-center p-8 bg-gray-50 rounded-lg">
-      <div className="text-center space-y-3">
-        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-        <div className="text-blue-800 font-medium">Loading 3D Avatar...</div>
-        <div className="text-sm text-blue-600">Preparing AI assistant</div>
-      </div>
-    </div>
-  ),
-  ssr: false // Disable SSR for 3D components
-})
+import CSSHealthcareAvatar from './CSSHealthcareAvatar'
 
 interface SummaryOutputProps {
   summary: string
@@ -171,7 +157,7 @@ export default function SummaryOutput({
 
         {activeTab === 'avatar' && (
           <div className="prose max-w-none">
-            <HealthcareAvatar
+            <CSSHealthcareAvatar
               text={summary}
               audience={metadata?.options?.targetAudience || 'patient'}
             />
