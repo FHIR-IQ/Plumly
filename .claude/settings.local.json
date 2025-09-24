@@ -22,7 +22,10 @@
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:medium.com)",
       "Bash(test:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(unzip:*)",
+      "Bash(while read file)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

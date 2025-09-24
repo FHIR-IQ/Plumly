@@ -3,6 +3,7 @@
 import React, { useState, useCallback } from 'react'
 import { FHIRBundle } from '@/types/fhir'
 import { validateFHIRBundle } from '@/lib/fhir-validator'
+import SampleBundleSelector from './SampleBundleSelector'
 
 interface FileUploadProps {
   onFileUpload: (bundle: FHIRBundle) => void
@@ -113,6 +114,11 @@ export default function FileUpload({ onFileUpload, className = '' }: FileUploadP
           </div>
         </div>
       )}
+
+      {/* Sample Bundle Selector */}
+      <div className="mt-6 pt-6 border-t border-gray-200">
+        <SampleBundleSelector onSelectBundle={onFileUpload} />
+      </div>
 
       <div className="mt-4 text-xs text-gray-500">
         <strong>Sample FHIR Bundle structure:</strong>
