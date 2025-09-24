@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useRef, useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
+import SimpleAvatar from '@/lib/simple-avatar'
 
 interface HealthcareAvatarProps {
   text?: string
@@ -9,9 +9,7 @@ interface HealthcareAvatarProps {
   className?: string
 }
 
-// Dynamically import to avoid SSR issues
-const HealthcareAvatarComponent = dynamic(
-  () => Promise.resolve(({ text, audience = 'patient', className = '' }: HealthcareAvatarProps) => {
+export default function HealthcareAvatar({ text, audience = 'patient', className = '' }: HealthcareAvatarProps) {
     const avatarRef = useRef<HTMLDivElement>(null)
     const [avatar, setAvatar] = useState<any>(null)
     const [isLoading, setIsLoading] = useState(true)
@@ -39,27 +37,26 @@ const HealthcareAvatarComponent = dynamic(
     }
 
     useEffect(() => {
-      const initializeAvatar = async () => {
+      const initializeAvatar = () => {
         if (!avatarRef.current) return
 
         try {
           setIsLoading(true)
           setError(null)
 
-          // Dynamic import of SimpleAvatar for demo
-          const { SimpleAvatar } = await import('@/lib/simple-avatar')
+          console.log('Initializing avatar for audience:', audience)
 
           // Initialize SimpleAvatar (this creates the avatar immediately)
           const avatarInstance = new SimpleAvatar(avatarRef.current!)
 
-          // Load appropriate avatar for audience (this should resolve immediately)
+          // Load appropriate avatar for audience (this resolves immediately)
           const avatarConfig = healthcareAvatars[audience]
-          await avatarInstance.loadAvatar({
+          avatarInstance.loadAvatar({
             url: avatarConfig.url,
             body: avatarConfig.body
           })
 
-          // Set avatar and loaded state
+          // Set avatar and loaded state immediately
           setAvatar(avatarInstance)
           setIsLoaded(true)
           setIsLoading(false)
@@ -73,10 +70,12 @@ const HealthcareAvatarComponent = dynamic(
         }
       }
 
-      initializeAvatar()
+      // Add a small timeout to ensure the DOM is ready
+      const timeoutId = setTimeout(initializeAvatar, 100)
 
       // Cleanup on unmount
       return () => {
+        clearTimeout(timeoutId)
         if (avatar) {
           avatar.dispose()
         }
@@ -252,20 +251,4 @@ const HealthcareAvatarComponent = dynamic(
         </div>
       </div>
     )
-  }),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-6 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex items-center justify-center space-x-2">
-          <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-          <span className="text-blue-800">Preparing 3D Avatar...</span>
-        </div>
-      </div>
-    )
-  }
-)
-
-export default function HealthcareAvatar(props: HealthcareAvatarProps) {
-  return <HealthcareAvatarComponent {...props} />
 }
