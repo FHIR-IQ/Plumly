@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useMemo } from 'react'
 import SimpleAvatar from '@/lib/simple-avatar'
 
 interface HealthcareAvatarProps {
@@ -21,7 +21,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
     console.log('HealthcareAvatar component mounted with text:', text?.substring(0, 50))
 
     // Healthcare-specific Ready Player Me avatars for demo
-    const healthcareAvatars = {
+    const healthcareAvatars = useMemo(() => ({
       patient: {
         url: 'https://models.readyplayer.me/64bfa15f0e72c63d7c3934a6.glb', // Female professional
         body: 'F',
@@ -37,13 +37,16 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
         body: 'F',
         description: 'Healthcare Representative'
       }
-    }
+    }), [])
 
     useEffect(() => {
       let retryCount = 0
       const maxRetries = 5
       let avatarInstance: SimpleAvatar | null = null
       let isMounted = true
+
+      // Copy ref at effect start to avoid stale ref warnings
+      const containerRef = avatarRef.current
 
       const initializeAvatar = () => {
         console.log('initializeAvatar called, avatarRef.current:', avatarRef.current, 'retry:', retryCount)
@@ -119,11 +122,11 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
           }
         }
 
-        // Clear container manually to prevent React conflicts
-        if (avatarRef.current) {
+        // Clear container using ref captured at effect start
+        if (containerRef) {
           try {
-            while (avatarRef.current.firstChild) {
-              avatarRef.current.removeChild(avatarRef.current.firstChild)
+            while (containerRef.firstChild) {
+              containerRef.removeChild(containerRef.firstChild)
             }
           } catch (err) {
             console.warn('Error clearing avatar container:', err)
@@ -133,7 +136,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
         setAvatar(null)
         setIsLoaded(false)
       }
-    }, [audience])
+    }, [audience, healthcareAvatars])
 
     const handleSpeak = async () => {
       if (!avatar || !text || isSpeaking) return
