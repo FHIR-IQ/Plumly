@@ -40,20 +40,27 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
     }
 
     useEffect(() => {
+      let retryCount = 0
+      const maxRetries = 5
+
       const initializeAvatar = () => {
-        console.log('initializeAvatar called, avatarRef.current:', avatarRef.current)
+        console.log('initializeAvatar called, avatarRef.current:', avatarRef.current, 'retry:', retryCount)
 
         if (!avatarRef.current) {
-          console.error('Avatar ref is not available yet')
-          // Retry after a short delay
-          setTimeout(initializeAvatar, 500)
-          return
+          retryCount++
+          if (retryCount < maxRetries) {
+            console.log(`Avatar ref not ready, retry ${retryCount}/${maxRetries}`)
+            setTimeout(initializeAvatar, 200)
+            return
+          } else {
+            console.error('Failed to get avatar ref after max retries')
+            setError('Failed to initialize avatar container')
+            setIsLoading(false)
+            return
+          }
         }
 
         try {
-          setIsLoading(true)
-          setError(null)
-
           console.log('Initializing avatar for audience:', audience)
 
           // Initialize SimpleAvatar (this creates the avatar immediately)
@@ -80,7 +87,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
         }
       }
 
-      // Add a small timeout to ensure the DOM is ready
+      // Start initialization
       const timeoutId = setTimeout(initializeAvatar, 100)
 
       // Cleanup on unmount
@@ -126,20 +133,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
       }
     }
 
-    if (isLoading) {
-      return (
-        <div className={`${className} p-6 bg-blue-50 border border-blue-200 rounded-lg`}>
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-            <div className="text-center">
-              <div className="text-lg font-medium text-blue-800 mb-1">Loading AI Healthcare Avatar</div>
-              <div className="text-sm text-blue-600">Initializing 3D model and lip-sync system...</div>
-              <div className="text-xs text-blue-500 mt-2">Component is rendering. Check console for logs.</div>
-            </div>
-          </div>
-        </div>
-      )
-    }
+    // Don't return early - we need the ref to be attached to the DOM
 
     if (error) {
       return (
@@ -170,11 +164,24 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
             </p>
           </div>
 
-          <div
-            ref={avatarRef}
-            className="w-full h-96 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden"
-            style={{ minHeight: '384px' }}
-          />
+          {/* Always render the avatar container so ref can attach */}
+          <div className="relative">
+            <div
+              ref={avatarRef}
+              className="w-full h-96 bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 overflow-hidden"
+              style={{ minHeight: '384px' }}
+            >
+              {/* Show loading overlay while loading */}
+              {isLoading && (
+                <div className="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center">
+                  <div className="text-center">
+                    <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                    <div className="text-lg font-medium text-blue-800">Loading Avatar...</div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {isLoaded && (
             <div className="mt-4 text-center">
