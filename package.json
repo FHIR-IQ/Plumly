@@ -14,12 +14,16 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.3",
+    "@react-three/drei": "^10.7.6",
+    "@react-three/fiber": "^9.3.0",
     "@types/fhir": "^0.0.36",
+    "@types/three": "^0.180.0",
     "autoprefixer": "^10.4.21",
     "fhir": "^4.11.1",
     "next": "^15.5.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "three": "^0.180.0"
   },
   "devDependencies": {
     "@types/node": "^20",

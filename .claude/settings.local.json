@@ -13,7 +13,8 @@
       "Bash(npm audit:*)",
       "Bash(npm update:*)",
       "WebFetch(domain:github.com)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []
