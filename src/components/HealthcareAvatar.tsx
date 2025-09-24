@@ -3,6 +3,7 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { HealthcareAvatarEngine, AvatarConfig, AvatarControls } from '@/lib/avatar-engine'
 import { ttsClient, VoiceInfo } from '@/lib/text-to-speech'
+import TextToSpeechPlayer from './TextToSpeechPlayer'
 
 interface HealthcareAvatarProps {
   text: string
@@ -168,6 +169,32 @@ export default function HealthcareAvatar({
         <div className="text-center text-gray-500">
           <div className="text-4xl mb-2">👩‍⚕️</div>
           <div>No healthcare summary available for avatar presentation</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Fallback UI if 3D avatar fails to load
+  if (error && !isInitialized) {
+    return (
+      <div className={`${className} bg-gradient-to-b from-blue-50 to-white rounded-lg shadow-lg overflow-hidden p-6`}>
+        <div className="text-center space-y-4">
+          <div className="text-6xl mb-4">👩‍⚕️</div>
+          <h3 className="text-lg font-semibold text-gray-800">Healthcare AI Assistant</h3>
+          <p className="text-gray-600">3D avatar unavailable - using voice-only mode</p>
+
+          <div className="mt-4">
+            <TextToSpeechPlayer
+              text={text}
+              audience={audience}
+              className="max-w-md mx-auto"
+            />
+          </div>
+
+          <div className="text-sm text-red-600 mt-4">
+            <p>🔧 3D Avatar Error: {error}</p>
+            <p className="text-xs text-gray-500 mt-1">This may be due to browser compatibility or system resources</p>
+          </div>
         </div>
       </div>
     )

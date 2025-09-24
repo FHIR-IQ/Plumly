@@ -14,7 +14,8 @@
       "Bash(npm update:*)",
       "WebFetch(domain:github.com)",
       "Bash(npx tsc:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(npm run dev:*)"
     ],
     "deny": [],
     "ask": []
