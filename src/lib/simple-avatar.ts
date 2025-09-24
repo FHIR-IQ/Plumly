@@ -15,7 +15,9 @@ export class SimpleAvatar {
 
   private init() {
     // Create a simple 3D-looking avatar placeholder
-    this.container.innerHTML = `
+    // Use a wrapper div to avoid React DOM conflicts
+    const wrapper = document.createElement('div')
+    wrapper.innerHTML = `
       <div style="
         width: 100%;
         height: 100%;
@@ -90,6 +92,16 @@ export class SimpleAvatar {
         ">Ready to speak</div>
       </div>
     `
+
+    // Clear the container and append the new content
+    while (this.container.firstChild) {
+      this.container.removeChild(this.container.firstChild)
+    }
+
+    // Append the avatar content from wrapper
+    if (wrapper.firstChild) {
+      this.container.appendChild(wrapper.firstChild)
+    }
   }
 
   async loadAvatar(config: { url: string; body: string }) {
@@ -184,6 +196,10 @@ export class SimpleAvatar {
 
   dispose() {
     this.stopSpeaking()
+    // Clear the container to avoid React DOM conflicts
+    while (this.container.firstChild) {
+      this.container.removeChild(this.container.firstChild)
+    }
   }
 
   get isLoaded() {

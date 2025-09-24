@@ -42,6 +42,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
     useEffect(() => {
       let retryCount = 0
       const maxRetries = 5
+      let avatarInstance: SimpleAvatar | null = null
 
       const initializeAvatar = () => {
         console.log('initializeAvatar called, avatarRef.current:', avatarRef.current, 'retry:', retryCount)
@@ -64,7 +65,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
           console.log('Initializing avatar for audience:', audience)
 
           // Initialize SimpleAvatar (this creates the avatar immediately)
-          const avatarInstance = new SimpleAvatar(avatarRef.current)
+          avatarInstance = new SimpleAvatar(avatarRef.current)
 
           // Load appropriate avatar for audience (this resolves immediately)
           const avatarConfig = healthcareAvatars[audience]
@@ -93,8 +94,10 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
       // Cleanup on unmount
       return () => {
         clearTimeout(timeoutId)
-        if (avatar) {
-          avatar.dispose()
+        if (avatarInstance) {
+          avatarInstance.dispose()
+          setAvatar(null)
+          setIsLoaded(false)
         }
       }
     }, [audience])
