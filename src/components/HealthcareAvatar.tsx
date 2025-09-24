@@ -43,9 +43,12 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
       let retryCount = 0
       const maxRetries = 5
       let avatarInstance: SimpleAvatar | null = null
+      let isMounted = true
 
       const initializeAvatar = () => {
         console.log('initializeAvatar called, avatarRef.current:', avatarRef.current, 'retry:', retryCount)
+
+        if (!isMounted) return
 
         if (!avatarRef.current) {
           retryCount++
@@ -55,8 +58,10 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
             return
           } else {
             console.error('Failed to get avatar ref after max retries')
-            setError('Failed to initialize avatar container')
-            setIsLoading(false)
+            if (isMounted) {
+              setError('Failed to initialize avatar container')
+              setIsLoading(false)
+            }
             return
           }
         }
@@ -64,27 +69,36 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
         try {
           console.log('Initializing avatar for audience:', audience)
 
-          // Initialize SimpleAvatar (this creates the avatar immediately)
-          avatarInstance = new SimpleAvatar(avatarRef.current)
+          // Clear any existing content first
+          const container = avatarRef.current
+          while (container.firstChild) {
+            container.removeChild(container.firstChild)
+          }
 
-          // Load appropriate avatar for audience (this resolves immediately)
+          // Initialize SimpleAvatar with proper error handling
+          avatarInstance = new SimpleAvatar(container)
+
+          // Load appropriate avatar for audience
           const avatarConfig = healthcareAvatars[audience]
           avatarInstance.loadAvatar({
             url: avatarConfig.url,
             body: avatarConfig.body
           })
 
-          // Set avatar and loaded state immediately
-          setAvatar(avatarInstance)
-          setIsLoaded(true)
-          setIsLoading(false)
-
-          console.log('Avatar successfully loaded for audience:', audience)
+          // Set avatar and loaded state only if component is still mounted
+          if (isMounted) {
+            setAvatar(avatarInstance)
+            setIsLoaded(true)
+            setIsLoading(false)
+            console.log('Avatar successfully loaded for audience:', audience)
+          }
 
         } catch (err) {
           console.error('Failed to initialize avatar:', err)
-          setError(`Failed to load 3D avatar: ${err instanceof Error ? err.message : 'Unknown error'}`)
-          setIsLoading(false)
+          if (isMounted) {
+            setError(`Failed to load 3D avatar: ${err instanceof Error ? err.message : 'Unknown error'}`)
+            setIsLoading(false)
+          }
         }
       }
 
@@ -93,12 +107,31 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
 
       // Cleanup on unmount
       return () => {
+        isMounted = false
         clearTimeout(timeoutId)
+
+        // Safely dispose of avatar
         if (avatarInstance) {
-          avatarInstance.dispose()
-          setAvatar(null)
-          setIsLoaded(false)
+          try {
+            avatarInstance.dispose()
+          } catch (err) {
+            console.warn('Error disposing avatar:', err)
+          }
         }
+
+        // Clear container manually to prevent React conflicts
+        if (avatarRef.current) {
+          try {
+            while (avatarRef.current.firstChild) {
+              avatarRef.current.removeChild(avatarRef.current.firstChild)
+            }
+          } catch (err) {
+            console.warn('Error clearing avatar container:', err)
+          }
+        }
+
+        setAvatar(null)
+        setIsLoaded(false)
       }
     }, [audience])
 
