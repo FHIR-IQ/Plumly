@@ -17,6 +17,9 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
     const [isSpeaking, setIsSpeaking] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
+    // Log when component mounts
+    console.log('HealthcareAvatar component mounted with text:', text?.substring(0, 50))
+
     // Healthcare-specific Ready Player Me avatars for demo
     const healthcareAvatars = {
       patient: {
@@ -38,7 +41,14 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
 
     useEffect(() => {
       const initializeAvatar = () => {
-        if (!avatarRef.current) return
+        console.log('initializeAvatar called, avatarRef.current:', avatarRef.current)
+
+        if (!avatarRef.current) {
+          console.error('Avatar ref is not available yet')
+          // Retry after a short delay
+          setTimeout(initializeAvatar, 500)
+          return
+        }
 
         try {
           setIsLoading(true)
@@ -47,7 +57,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
           console.log('Initializing avatar for audience:', audience)
 
           // Initialize SimpleAvatar (this creates the avatar immediately)
-          const avatarInstance = new SimpleAvatar(avatarRef.current!)
+          const avatarInstance = new SimpleAvatar(avatarRef.current)
 
           // Load appropriate avatar for audience (this resolves immediately)
           const avatarConfig = healthcareAvatars[audience]
@@ -124,7 +134,7 @@ export default function HealthcareAvatar({ text, audience = 'patient', className
             <div className="text-center">
               <div className="text-lg font-medium text-blue-800 mb-1">Loading AI Healthcare Avatar</div>
               <div className="text-sm text-blue-600">Initializing 3D model and lip-sync system...</div>
-              <div className="text-xs text-blue-500 mt-2">This may take 10-15 seconds</div>
+              <div className="text-xs text-blue-500 mt-2">Component is rendering. Check console for logs.</div>
             </div>
           </div>
         </div>
