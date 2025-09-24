@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import TextToSpeechPlayer from './TextToSpeechPlayer'
-import RealisticDoctorAvatar from './RealisticDoctorAvatar'
 
 interface SummaryOutputProps {
   summary: string
@@ -23,7 +22,7 @@ export default function SummaryOutput({
   onDownload,
   className = ''
 }: SummaryOutputProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'metadata' | 'audio' | 'avatar'>('summary')
+  const [activeTab, setActiveTab] = useState<'summary' | 'metadata' | 'audio'>('summary')
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString()
@@ -67,34 +66,19 @@ export default function SummaryOutput({
             Summary
           </button>
           {summary && (
-            <>
-              <button
-                onClick={() => setActiveTab('audio')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 ${
-                  activeTab === 'audio'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.697L4.906 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.906l3.477-2.697zM13 5.586l-1.293 1.293a1 1 0 001.414 1.414L15.414 6.5a1 1 0 000-1.414L13.121 2.793a1 1 0 00-1.414 1.414L13 5.586z" clipRule="evenodd" />
-                </svg>
-                <span>Audio</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('avatar')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 ${
-                  activeTab === 'avatar'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
-                </svg>
-                <span>AI Avatar</span>
-              </button>
-            </>
+            <button
+              onClick={() => setActiveTab('audio')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm flex items-center space-x-1 ${
+                activeTab === 'audio'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.697L4.906 14H2a1 1 0 01-1-1V7a1 1 0 011-1h2.906l3.477-2.697zM13 5.586l-1.293 1.293a1 1 0 001.414 1.414L15.414 6.5a1 1 0 000-1.414L13.121 2.793a1 1 0 00-1.414 1.414L13 5.586z" clipRule="evenodd" />
+              </svg>
+              <span>Audio</span>
+            </button>
           )}
           {metadata && (
             <button
@@ -149,15 +133,6 @@ export default function SummaryOutput({
         {activeTab === 'audio' && (
           <div className="prose max-w-none">
             <TextToSpeechPlayer
-              text={summary}
-              audience={metadata?.options?.targetAudience || 'patient'}
-            />
-          </div>
-        )}
-
-        {activeTab === 'avatar' && (
-          <div className="prose max-w-none">
-            <RealisticDoctorAvatar
               text={summary}
               audience={metadata?.options?.targetAudience || 'patient'}
             />

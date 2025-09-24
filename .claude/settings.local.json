@@ -16,7 +16,9 @@
       "Bash(npx tsc:*)",
       "WebSearch",
       "Bash(npm run dev:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "WebFetch(domain:ravatar.com)",
+      "WebFetch(domain:api.a2e.ai)"
     ],
     "deny": [],
     "ask": []
