@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react'
 import TextToSpeechPlayer from './TextToSpeechPlayer'
-import RealisticHealthcareAvatar from './RealisticHealthcareAvatar'
+import RealisticDoctorAvatar from './RealisticDoctorAvatar'
 
 interface SummaryOutputProps {
   summary: string
@@ -157,7 +157,7 @@ export default function SummaryOutput({
 
         {activeTab === 'avatar' && (
           <div className="prose max-w-none">
-            <RealisticHealthcareAvatar
+            <RealisticDoctorAvatar
               text={summary}
               audience={metadata?.options?.targetAudience || 'patient'}
             />
