@@ -4,12 +4,22 @@
 export class SimpleAvatar {
   private container: HTMLElement
   private isSpeaking: boolean = false
+  private static instanceMap = new WeakMap<HTMLElement, SimpleAvatar>()
 
   constructor(container: HTMLElement) {
     if (!container) {
       throw new Error('Container element is required')
     }
+
+    // Check if an instance already exists for this container
+    const existingInstance = SimpleAvatar.instanceMap.get(container)
+    if (existingInstance) {
+      console.warn('SimpleAvatar: Disposing existing instance for container')
+      existingInstance.dispose()
+    }
+
     this.container = container
+    SimpleAvatar.instanceMap.set(container, this)
     this.init()
   }
 
@@ -93,9 +103,15 @@ export class SimpleAvatar {
       </div>
     `
 
-    // Clear the container and append the new content
-    while (this.container.firstChild) {
-      this.container.removeChild(this.container.firstChild)
+    // Clear the container safely and append the new content
+    try {
+      while (this.container.firstChild) {
+        this.container.removeChild(this.container.firstChild)
+      }
+    } catch (err) {
+      console.warn('SimpleAvatar init cleanup error (safe to ignore):', err)
+      // Fallback: use innerHTML
+      this.container.innerHTML = ''
     }
 
     // Append the avatar content from wrapper
@@ -196,9 +212,21 @@ export class SimpleAvatar {
 
   dispose() {
     this.stopSpeaking()
-    // Clear the container to avoid React DOM conflicts
-    while (this.container.firstChild) {
-      this.container.removeChild(this.container.firstChild)
+
+    // Remove from instance map
+    SimpleAvatar.instanceMap.delete(this.container)
+
+    // Clear the container safely to avoid React DOM conflicts
+    if (this.container && this.container.parentNode) {
+      try {
+        while (this.container.firstChild) {
+          this.container.removeChild(this.container.firstChild)
+        }
+      } catch (err) {
+        console.warn('SimpleAvatar dispose error (safe to ignore):', err)
+        // Fallback: set innerHTML to empty
+        this.container.innerHTML = ''
+      }
     }
   }
 
