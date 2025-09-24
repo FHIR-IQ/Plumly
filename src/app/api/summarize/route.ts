@@ -37,12 +37,38 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error generating summary:', error)
+
+    // Parse Claude API specific errors for better user experience
+    let userFriendlyError = 'Failed to generate summary'
+    let errorType = 'unknown'
+    let statusCode = 500
+
+    if (error instanceof Error && error.message.includes('overloaded_error')) {
+      userFriendlyError = 'Claude AI is currently experiencing high demand. Please try again in a few minutes.'
+      errorType = 'capacity'
+      statusCode = 503 // Service Temporarily Unavailable
+    } else if (error instanceof Error && error.message.includes('rate_limit')) {
+      userFriendlyError = 'Rate limit exceeded. Please wait a moment before trying again.'
+      errorType = 'rate_limit'
+      statusCode = 429 // Too Many Requests
+    } else if (error instanceof Error && error.message.includes('authentication_error')) {
+      userFriendlyError = 'Claude API authentication failed. Please contact support.'
+      errorType = 'auth'
+      statusCode = 401 // Unauthorized
+    } else if (error instanceof Error && error.message.includes('invalid_request_error')) {
+      userFriendlyError = 'Invalid request format. Please check your FHIR bundle and try again.'
+      errorType = 'invalid_request'
+      statusCode = 400 // Bad Request
+    }
+
     return NextResponse.json(
       {
-        error: 'Failed to generate summary',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        error: userFriendlyError,
+        errorType,
+        details: error instanceof Error ? error.message : 'Unknown error',
+        retryable: errorType === 'capacity' || errorType === 'rate_limit'
       },
-      { status: 500 }
+      { status: statusCode }
     )
   }
 }

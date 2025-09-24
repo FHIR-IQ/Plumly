@@ -21,7 +21,8 @@
       "WebFetch(domain:api.a2e.ai)",
       "WebFetch(domain:www.npmjs.com)",
       "WebFetch(domain:medium.com)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
