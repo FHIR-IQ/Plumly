@@ -47,26 +47,28 @@ const HealthcareAvatarComponent = dynamic(
           setError(null)
 
           // Dynamic import of SimpleAvatar for demo
-          const SimpleAvatarModule = await import('@/lib/simple-avatar')
-          const { SimpleAvatar } = SimpleAvatarModule
+          const { SimpleAvatar } = await import('@/lib/simple-avatar')
 
-          // Initialize SimpleAvatar
-          const avatarInstance = new SimpleAvatar(avatarRef.current)
+          // Initialize SimpleAvatar (this creates the avatar immediately)
+          const avatarInstance = new SimpleAvatar(avatarRef.current!)
 
-          // Load appropriate avatar for audience
+          // Load appropriate avatar for audience (this should resolve immediately)
           const avatarConfig = healthcareAvatars[audience]
           await avatarInstance.loadAvatar({
             url: avatarConfig.url,
             body: avatarConfig.body
           })
 
+          // Set avatar and loaded state
           setAvatar(avatarInstance)
           setIsLoaded(true)
           setIsLoading(false)
 
+          console.log('Avatar successfully loaded for audience:', audience)
+
         } catch (err) {
           console.error('Failed to initialize avatar:', err)
-          setError('Failed to load 3D avatar. Please try refreshing the page.')
+          setError(`Failed to load 3D avatar: ${err instanceof Error ? err.message : 'Unknown error'}`)
           setIsLoading(false)
         }
       }

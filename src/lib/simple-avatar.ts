@@ -6,6 +6,9 @@ export class SimpleAvatar {
   private isSpeaking: boolean = false
 
   constructor(container: HTMLElement) {
+    if (!container) {
+      throw new Error('Container element is required')
+    }
     this.container = container
     this.init()
   }
