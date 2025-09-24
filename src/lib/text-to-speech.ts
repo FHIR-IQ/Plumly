@@ -5,6 +5,14 @@ export interface TTSOptions {
   volume?: number // 0 to 1, default 1
   voice?: SpeechSynthesisVoice
   lang?: string // Language code, default 'en-US'
+  gender?: 'male' | 'female' | 'neutral' // Voice gender preference
+}
+
+export interface VoiceInfo {
+  voice: SpeechSynthesisVoice
+  gender: 'male' | 'female' | 'neutral'
+  quality: 'natural' | 'enhanced' | 'standard'
+  displayName: string
 }
 
 export interface TTSControls {
@@ -33,8 +41,8 @@ export class TextToSpeechClient {
     }
   }
 
-  // Get available voices, filtered for healthcare-appropriate options
-  async getVoices(): Promise<SpeechSynthesisVoice[]> {
+  // Get available voices with enhanced metadata
+  async getVoicesWithInfo(): Promise<VoiceInfo[]> {
     if (!this.synthesis) {
       return []
     }
@@ -46,29 +54,118 @@ export class TextToSpeechClient {
         // Voices might not be loaded yet
         this.synthesis!.onvoiceschanged = () => {
           voices = this.synthesis!.getVoices()
-          resolve(this.filterHealthcareVoices(voices))
+          resolve(this.categorizeVoices(voices))
         }
       } else {
-        resolve(this.filterHealthcareVoices(voices))
+        resolve(this.categorizeVoices(voices))
       }
     })
   }
 
-  private filterHealthcareVoices(voices: SpeechSynthesisVoice[]): SpeechSynthesisVoice[] {
-    // Prefer clear, professional voices for healthcare content
-    const preferredVoices = voices.filter(voice =>
-      voice.lang.startsWith('en') &&
-      (voice.name.includes('Natural') ||
-       voice.name.includes('Enhanced') ||
-       voice.name.includes('Premium') ||
-       voice.default)
-    )
-
-    return preferredVoices.length > 0 ? preferredVoices : voices.filter(v => v.lang.startsWith('en'))
+  // Get available voices, filtered for healthcare-appropriate options
+  async getVoices(): Promise<SpeechSynthesisVoice[]> {
+    const voicesWithInfo = await this.getVoicesWithInfo()
+    return voicesWithInfo.map(v => v.voice)
   }
 
-  // Split long text into manageable chunks to avoid browser limits
-  private splitTextIntoChunks(text: string, maxLength: number = 200): string[] {
+  private categorizeVoices(voices: SpeechSynthesisVoice[]): VoiceInfo[] {
+    return voices
+      .filter(voice => voice.lang.startsWith('en'))
+      .map(voice => {
+        // Determine gender based on voice name patterns
+        let gender: 'male' | 'female' | 'neutral' = 'neutral'
+        const nameLower = voice.name.toLowerCase()
+
+        // Common patterns for female voices
+        const femalePatterns = ['female', 'woman', 'girl', 'zira', 'samantha', 'victoria',
+                               'karen', 'moira', 'fiona', 'tessa', 'sara', 'susan', 'catherine',
+                               'allison', 'ava', 'nora', 'emily', 'joanna', 'ivy', 'kendra',
+                               'aria', 'salli', 'kimberly', 'jennifer', 'michelle']
+
+        // Common patterns for male voices
+        const malePatterns = ['male', 'man', 'boy', 'david', 'mark', 'james', 'daniel',
+                             'thomas', 'alex', 'fred', 'dennis', 'brad', 'tom', 'will',
+                             'matthew', 'joey', 'justin', 'brian', 'eric', 'russell',
+                             'guy', 'nathan', 'stephen', 'oliver', 'aaron', 'michael']
+
+        if (femalePatterns.some(pattern => nameLower.includes(pattern))) {
+          gender = 'female'
+        } else if (malePatterns.some(pattern => nameLower.includes(pattern))) {
+          gender = 'male'
+        }
+
+        // Determine quality based on voice name
+        let quality: 'natural' | 'enhanced' | 'standard' = 'standard'
+        if (voice.name.includes('Natural') || voice.name.includes('Neural')) {
+          quality = 'natural'
+        } else if (voice.name.includes('Enhanced') || voice.name.includes('Premium') ||
+                   voice.name.includes('Plus') || voice.name.includes('HD')) {
+          quality = 'enhanced'
+        }
+
+        // Create a friendly display name
+        let displayName = voice.name
+        // Clean up common prefixes/suffixes
+        displayName = displayName.replace(/^Microsoft\s+/i, '')
+        displayName = displayName.replace(/^Google\s+/i, '')
+        displayName = displayName.replace(/\s+\(.*\)$/i, '')
+        displayName = displayName.replace(/\s+Online$/i, '')
+        displayName = displayName.replace(/\s+\(Natural\)$/i, ' AI')
+
+        // Add quality indicator
+        if (quality === 'natural') {
+          displayName += ' (Natural AI)'
+        } else if (quality === 'enhanced') {
+          displayName += ' (Enhanced)'
+        }
+
+        return {
+          voice,
+          gender,
+          quality,
+          displayName
+        }
+      })
+      .sort((a, b) => {
+        // Sort by quality first (natural > enhanced > standard)
+        const qualityOrder = { natural: 0, enhanced: 1, standard: 2 }
+        const qualityDiff = qualityOrder[a.quality] - qualityOrder[b.quality]
+        if (qualityDiff !== 0) return qualityDiff
+
+        // Then by name
+        return a.displayName.localeCompare(b.displayName)
+      })
+  }
+
+  // Get best voice matching preferences
+  async getBestVoice(gender?: 'male' | 'female' | 'neutral'): Promise<SpeechSynthesisVoice | null> {
+    const voicesWithInfo = await this.getVoicesWithInfo()
+
+    if (voicesWithInfo.length === 0) return null
+
+    // Filter by gender if specified
+    let filtered = voicesWithInfo
+    if (gender && gender !== 'neutral') {
+      const genderFiltered = voicesWithInfo.filter(v => v.gender === gender)
+      if (genderFiltered.length > 0) {
+        filtered = genderFiltered
+      }
+    }
+
+    // Prefer natural voices
+    const natural = filtered.filter(v => v.quality === 'natural')
+    if (natural.length > 0) return natural[0].voice
+
+    // Then enhanced
+    const enhanced = filtered.filter(v => v.quality === 'enhanced')
+    if (enhanced.length > 0) return enhanced[0].voice
+
+    // Finally standard
+    return filtered[0]?.voice || null
+  }
+
+  // Split long text into manageable chunks with natural pauses
+  private splitTextIntoChunks(text: string, maxLength: number = 300): string[] {
     const sentences = text.match(/[^\.!?]+[\.!?]+/g) || [text]
     const chunks: string[] = []
     let currentChunk = ''
@@ -157,10 +254,16 @@ export class TextToSpeechClient {
     // Handle medical dosages (e.g., "500mg" -> "500 milligrams")
     processed = processed.replace(/(\d+)(mg|ml|kg|lbs)/gi, '$1 $2')
 
-    // Add pauses for better readability
+    // Add natural pauses and emphasis
     processed = processed.replace(/\./g, '. ')
     processed = processed.replace(/,/g, ', ')
     processed = processed.replace(/:/g, ': ')
+    processed = processed.replace(/;/g, '; ')
+
+    // Add emphasis to important medical terms
+    processed = processed.replace(/(CRITICAL|URGENT|WARNING|CAUTION|IMPORTANT)/gi, (match) => {
+      return `... ${match} ...`
+    })
 
     return processed
   }
@@ -187,12 +290,15 @@ export class TextToSpeechClient {
     this.currentChunkIndex = 0
 
     // Set up default options optimized for healthcare content
+    const selectedVoice = options.voice ?? (await this.getBestVoice(options.gender)) ?? (await this.getVoices())[0]
+
     const ttsOptions: Required<TTSOptions> = {
-      rate: options.rate ?? 0.85, // Slightly slower for medical content
-      pitch: options.pitch ?? 1,
-      volume: options.volume ?? 0.8,
-      voice: options.voice ?? (await this.getVoices())[0],
-      lang: options.lang ?? 'en-US'
+      rate: options.rate ?? 0.9, // Natural speaking pace
+      pitch: options.pitch ?? 1.0,
+      volume: options.volume ?? 0.85,
+      voice: selectedVoice,
+      lang: options.lang ?? 'en-US',
+      gender: options.gender ?? 'neutral'
     }
 
     const self = this
@@ -293,19 +399,22 @@ export class TextToSpeechClient {
   static getHealthcarePresets(): Record<string, TTSOptions> {
     return {
       patient: {
-        rate: 0.8, // Slower for patient comprehension
-        pitch: 1.1, // Slightly higher pitch for friendliness
-        volume: 0.8
+        rate: 0.85, // Slower for patient comprehension
+        pitch: 1.05, // Slightly warmer tone
+        volume: 0.85,
+        gender: 'female' // Studies show patients prefer female voices for medical info
       },
       provider: {
-        rate: 0.9, // Standard professional rate
+        rate: 0.95, // Standard professional rate
         pitch: 1.0, // Neutral pitch
-        volume: 0.8
+        volume: 0.85,
+        gender: 'neutral' // Professional neutral
       },
       payer: {
-        rate: 0.95, // Slightly faster for data-heavy content
-        pitch: 0.95, // Slightly lower pitch for authority
-        volume: 0.8
+        rate: 1.0, // Standard rate for data content
+        pitch: 0.98, // Slightly lower pitch for authority
+        volume: 0.85,
+        gender: 'male' // Traditional business preference
       }
     }
   }

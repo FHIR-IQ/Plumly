@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useCallback } from 'react'
-import { ttsClient, TTSControls, TextToSpeechClient } from '@/lib/text-to-speech'
+import { ttsClient, TTSControls, TextToSpeechClient, VoiceInfo } from '@/lib/text-to-speech'
 
 interface TextToSpeechPlayerProps {
   text: string
@@ -18,11 +18,13 @@ export default function TextToSpeechPlayer({
   const [controls, setControls] = useState<TTSControls | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
+  const [availableVoices, setAvailableVoices] = useState<VoiceInfo[]>([])
   const [selectedVoice, setSelectedVoice] = useState<SpeechSynthesisVoice | null>(null)
+  const [selectedGender, setSelectedGender] = useState<'male' | 'female' | 'neutral'>('female')
   const [isPlaying, setIsPlaying] = useState(false)
   const [isPaused, setIsPaused] = useState(false)
   const [progress, setProgress] = useState(0)
+  const [speechRate, setSpeechRate] = useState(0.9)
 
   // Check browser support and load voices
   useEffect(() => {
@@ -32,10 +34,18 @@ export default function TextToSpeechPlayer({
 
       if (supported) {
         try {
-          const voices = await ttsClient.getVoices()
-          setAvailableVoices(voices)
-          if (voices.length > 0) {
-            setSelectedVoice(voices[0])
+          const voicesWithInfo = await ttsClient.getVoicesWithInfo()
+          setAvailableVoices(voicesWithInfo)
+
+          // Set default voice based on audience preference
+          const presets = TextToSpeechClient.getHealthcarePresets()
+          const defaultGender = presets[audience]?.gender || 'female'
+          setSelectedGender(defaultGender)
+
+          // Get best voice for the gender
+          const bestVoice = await ttsClient.getBestVoice(defaultGender)
+          if (bestVoice) {
+            setSelectedVoice(bestVoice)
           }
         } catch (err) {
           console.error('Failed to load voices:', err)
@@ -45,7 +55,7 @@ export default function TextToSpeechPlayer({
     }
 
     checkSupport()
-  }, [])
+  }, [audience])
 
   // Update state when TTS state changes
   const updateState = useCallback(() => {
@@ -70,7 +80,9 @@ export default function TextToSpeechPlayer({
       const presets = TextToSpeechClient.getHealthcarePresets()
       const options = {
         ...presets[audience],
-        voice: selectedVoice || undefined
+        voice: selectedVoice || undefined,
+        gender: selectedGender,
+        rate: speechRate
       }
 
       const ttsControls = await ttsClient.speak(text, options, updateState)
@@ -127,31 +139,81 @@ export default function TextToSpeechPlayer({
   return (
     <div className={`${className} p-4 bg-blue-50 border border-blue-200 rounded-lg`}>
       {/* Header */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center space-x-2">
-          <span className="text-blue-800 font-medium text-sm">🔊 Audio Summary</span>
-          <span className="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded">
-            {audience} mode
-          </span>
+      <div className="space-y-3 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <span className="text-blue-800 font-medium text-sm">🔊 AI Audio Summary</span>
+            <span className="text-blue-600 text-xs bg-blue-100 px-2 py-1 rounded">
+              {audience} mode
+            </span>
+          </div>
         </div>
 
-        {availableVoices.length > 1 && (
-          <select
-            value={selectedVoice?.name || ''}
-            onChange={(e) => {
-              const voice = availableVoices.find(v => v.name === e.target.value)
-              setSelectedVoice(voice || null)
-            }}
-            className="text-xs bg-white border border-blue-300 rounded px-2 py-1"
-            disabled={isPlaying}
-          >
-            {availableVoices.map((voice) => (
-              <option key={voice.name} value={voice.name}>
-                {voice.name} ({voice.lang})
-              </option>
-            ))}
-          </select>
-        )}
+        {/* Voice Controls */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Gender Selection */}
+          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">Voice Gender</label>
+            <select
+              value={selectedGender}
+              onChange={async (e) => {
+                const gender = e.target.value as 'male' | 'female' | 'neutral'
+                setSelectedGender(gender)
+                const bestVoice = await ttsClient.getBestVoice(gender)
+                if (bestVoice) {
+                  setSelectedVoice(bestVoice)
+                }
+              }}
+              className="w-full text-xs bg-white border border-blue-300 rounded px-2 py-1.5"
+              disabled={isPlaying}
+            >
+              <option value="female">👩 Female AI</option>
+              <option value="male">👨 Male AI</option>
+              <option value="neutral">🎭 Neutral</option>
+            </select>
+          </div>
+
+          {/* Voice Selection */}
+          {availableVoices.length > 1 && (
+            <div>
+              <label className="block text-xs font-medium text-blue-800 mb-1">Voice Type</label>
+              <select
+                value={selectedVoice?.name || ''}
+                onChange={(e) => {
+                  const voiceInfo = availableVoices.find(v => v.voice.name === e.target.value)
+                  setSelectedVoice(voiceInfo?.voice || null)
+                }}
+                className="w-full text-xs bg-white border border-blue-300 rounded px-2 py-1.5"
+                disabled={isPlaying}
+              >
+                {availableVoices
+                  .filter(v => selectedGender === 'neutral' || v.gender === selectedGender)
+                  .map((voiceInfo) => (
+                    <option key={voiceInfo.voice.name} value={voiceInfo.voice.name}>
+                      {voiceInfo.displayName}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          )}
+
+          {/* Speech Rate */}
+          <div>
+            <label className="block text-xs font-medium text-blue-800 mb-1">
+              Speed: {speechRate.toFixed(1)}x
+            </label>
+            <input
+              type="range"
+              min="0.5"
+              max="1.5"
+              step="0.1"
+              value={speechRate}
+              onChange={(e) => setSpeechRate(parseFloat(e.target.value))}
+              className="w-full h-2 bg-blue-200 rounded-lg appearance-none cursor-pointer"
+              disabled={isPlaying}
+            />
+          </div>
+        </div>
       </div>
 
       {/* Progress Bar */}
@@ -245,11 +307,18 @@ export default function TextToSpeechPlayer({
       )}
 
       {/* Info */}
-      <div className="mt-3 text-xs text-blue-600">
+      <div className="mt-3 text-xs text-blue-600 space-y-1">
         <p>💡 Audio optimized for {audience} audience with medical terminology pronunciation</p>
         {selectedVoice && (
-          <p>🎙️ Using: {selectedVoice.name} ({selectedVoice.lang})</p>
+          <div className="flex items-center space-x-2">
+            <span>🎙️ Voice:</span>
+            <span className="bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs">
+              {availableVoices.find(v => v.voice.name === selectedVoice.name)?.displayName || selectedVoice.name}
+            </span>
+            <span className="text-blue-500">at {speechRate}x speed</span>
+          </div>
         )}
+        <p className="text-blue-500">🧬 Enhanced with AI pronunciation for medical terms</p>
       </div>
     </div>
   )
