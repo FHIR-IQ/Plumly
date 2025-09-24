@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState } from 'react'
+import AudioPlayer from './AudioPlayer'
 
 interface SummaryOutputProps {
   summary: string
@@ -21,7 +22,7 @@ export default function SummaryOutput({
   onDownload,
   className = ''
 }: SummaryOutputProps) {
-  const [activeTab, setActiveTab] = useState<'summary' | 'metadata'>('summary')
+  const [activeTab, setActiveTab] = useState<'summary' | 'metadata' | 'audio'>('summary')
 
   const formatTimestamp = (timestamp: string) => {
     return new Date(timestamp).toLocaleString()
@@ -63,6 +64,16 @@ export default function SummaryOutput({
             }`}
           >
             Summary
+          </button>
+          <button
+            onClick={() => setActiveTab('audio')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'audio'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            Audio
           </button>
           {metadata && (
             <button
@@ -111,6 +122,12 @@ export default function SummaryOutput({
                 {summary}
               </div>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'audio' && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <AudioPlayer text={summary} />
           </div>
         )}
 
