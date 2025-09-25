@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import AudioPlayer from './AudioPlayer'
+import HighlightedSummary from './HighlightedSummary'
 
 interface SummaryOutputProps {
   summary: string
@@ -118,9 +119,7 @@ export default function SummaryOutput({
         {activeTab === 'summary' && (
           <div className="prose max-w-none">
             <div className="bg-white border border-gray-200 rounded-lg p-6">
-              <div className="whitespace-pre-wrap text-gray-800 leading-relaxed">
-                {summary}
-              </div>
+              <HighlightedSummary text={summary} />
             </div>
           </div>
         )}

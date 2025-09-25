@@ -15,6 +15,7 @@ export default function AudioPlayer({ text, className = '' }: AudioPlayerProps) 
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([])
   const [rate, setRate] = useState(1.0)
   const [isSupported, setIsSupported] = useState(false)
+  const [isLoadingVoices, setIsLoadingVoices] = useState(true)
 
   const ttsService = TTSService.getInstance()
 
@@ -25,23 +26,38 @@ export default function AudioPlayer({ text, className = '' }: AudioPlayerProps) 
     // Load voices
     const loadVoices = () => {
       const availableVoices = ttsService.getVoices()
-      setVoices(availableVoices)
-      if (!selectedVoice && availableVoices.length > 0) {
-        setSelectedVoice(ttsService.getPreferredVoice())
+      console.log('Loading voices:', availableVoices.length, 'voices found')
+
+      if (availableVoices.length > 0) {
+        setVoices(availableVoices)
+        setIsLoadingVoices(false)
+
+        // Only set default voice if we don't have one selected
+        if (!selectedVoice) {
+          const preferredVoice = ttsService.getPreferredVoice()
+          console.log('Setting preferred voice:', preferredVoice?.name)
+          setSelectedVoice(preferredVoice)
+        }
       }
     }
 
+    // Initial load
     loadVoices()
 
-    // Handle voice list updates (Chrome loads voices asynchronously)
+    // Set up voice change listener
     if (typeof window !== 'undefined' && window.speechSynthesis) {
       window.speechSynthesis.onvoiceschanged = loadVoices
+
+      // Some browsers need a small delay
+      setTimeout(loadVoices, 100)
+      setTimeout(loadVoices, 500)
     }
 
     return () => {
       ttsService.stop()
     }
-  }, [ttsService, selectedVoice])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Remove dependencies to avoid infinite loop
 
   const handlePlay = useCallback(() => {
     if (!text) return
@@ -154,23 +170,31 @@ export default function AudioPlayer({ text, className = '' }: AudioPlayerProps) 
       {/* Voice Selection */}
       <div className="space-y-2">
         <label className="block text-sm font-medium text-gray-700">
-          Voice
+          Voice ({voices.length} available)
         </label>
-        <select
-          value={selectedVoice?.name || ''}
-          onChange={(e) => {
-            const voice = voices.find(v => v.name === e.target.value)
-            setSelectedVoice(voice || null)
-          }}
-          className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-          disabled={isPlaying}
-        >
-          {voices.map((voice) => (
-            <option key={voice.name} value={voice.name}>
-              {voice.name} ({voice.lang})
-            </option>
-          ))}
-        </select>
+        {isLoadingVoices ? (
+          <div className="text-sm text-gray-500">Loading voices...</div>
+        ) : voices.length === 0 ? (
+          <div className="text-sm text-yellow-600">No voices detected. Try refreshing the page.</div>
+        ) : (
+          <select
+            value={selectedVoice?.name || ''}
+            onChange={(e) => {
+              const voice = voices.find(v => v.name === e.target.value)
+              console.log('Selected voice:', voice?.name)
+              setSelectedVoice(voice || null)
+            }}
+            className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            disabled={isPlaying}
+          >
+            {!selectedVoice && <option value="">Select a voice</option>}
+            {voices.map((voice) => (
+              <option key={voice.name} value={voice.name}>
+                {voice.name} ({voice.lang}) {voice.localService ? '[Local]' : '[Online]'}
+              </option>
+            ))}
+          </select>
+        )}
       </div>
 
       {/* Speed Control */}
