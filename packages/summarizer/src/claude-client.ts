@@ -265,6 +265,7 @@ export class ClaudeClient {
   private createFallbackStructuredResponse(response: string): any {
     // Simple fallback when JSON parsing fails
     const sections = response.split('\n\n').filter(section => section.trim().length > 0);
+    const timestamp = new Date().toISOString();
 
     return {
       summary: response.length > 500 ? response.substring(0, 497) + '...' : response,
@@ -273,7 +274,14 @@ export class ClaudeClient {
         title: `Section ${index + 1}`,
         content: content.trim(),
         confidence: 0.7,
-        sources: []
+        sources: [],
+        claims: [],
+        metadata: {
+          generatedAt: timestamp,
+          persona: 'patient',
+          template: 'fallback',
+          processingTime: 0
+        }
       })),
       metadata: {
         persona: 'patient',
@@ -304,6 +312,21 @@ export class ClaudeClient {
         if (!Array.isArray(section.sources)) {
           section.sources = [];
         }
+        if (!Array.isArray(section.claims)) {
+          section.claims = [];
+        }
+        // Ensure section has metadata
+        if (!section.metadata) {
+          section.metadata = {};
+        }
+        // Add required metadata fields
+        section.metadata = {
+          generatedAt: new Date().toISOString(),
+          persona: request.persona,
+          template: this.templateManager.getTemplate(request.persona)?.id || 'unknown',
+          processingTime: 0, // Will be updated at response level
+          ...section.metadata
+        };
       });
     }
 

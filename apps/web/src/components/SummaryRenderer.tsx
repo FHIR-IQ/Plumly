@@ -163,11 +163,19 @@ export function SummaryRenderer({
         )}
 
         {/* Metadata */}
-        <div className="mt-2 text-xs text-gray-400">
-          Generated at {new Date(section.metadata.generatedAt).toLocaleString()} •
-          Persona: {section.metadata.persona} •
-          Template: {section.metadata.template}
-        </div>
+        {section.metadata && (
+          <div className="mt-2 text-xs text-gray-400">
+            {section.metadata.generatedAt && (
+              <>Generated at {new Date(section.metadata.generatedAt).toLocaleString()} • </>
+            )}
+            {section.metadata.persona && (
+              <>Persona: {section.metadata.persona} • </>
+            )}
+            {section.metadata.template && (
+              <>Template: {section.metadata.template}</>
+            )}
+          </div>
+        )}
       </div>
     )
   }
