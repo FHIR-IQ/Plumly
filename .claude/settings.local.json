@@ -38,7 +38,8 @@
       "Bash(python -m uv tool run:*)",
       "Bash(/bashes)",
       "Bash(npm test:*)",
-      "Bash(vercel:*)"
+      "Bash(vercel:*)",
+      "Read(//c/Users/default.LAPTOP-BOBEDDVK/OneDrive/Documents/**)"
     ],
     "deny": [],
     "ask": []
