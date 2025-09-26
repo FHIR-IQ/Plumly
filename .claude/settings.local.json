@@ -39,7 +39,10 @@
       "Bash(/bashes)",
       "Bash(npm test:*)",
       "Bash(vercel:*)",
-      "Read(//c/Users/default.LAPTOP-BOBEDDVK/OneDrive/Documents/**)"
+      "Read(//c/Users/default.LAPTOP-BOBEDDVK/OneDrive/Documents/**)",
+      "WebFetch(domain:vercel.com)",
+      "WebFetch(domain:plumly-meqaibr46-aks129s-projects.vercel.app)",
+      "WebFetch(domain:plumly-bzmdjxfxg-aks129s-projects.vercel.app)"
     ],
     "deny": [],
     "ask": []

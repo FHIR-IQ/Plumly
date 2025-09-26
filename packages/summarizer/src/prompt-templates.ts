@@ -22,7 +22,9 @@ export class PromptTemplateManager {
 
   private loadDefaultTemplates(): void {
     Object.values(TEMPLATE_REGISTRY).forEach(template => {
+      // Store by both ID and persona for flexible lookup
       this.templates.set(template.id, template);
+      this.templates.set(template.persona, template);
     });
 
     // Load A/B test variants
