@@ -1,36 +1,44 @@
 {
-  "name": "plumly",
+  "name": "plumly-vnext",
   "version": "0.1.0",
   "private": true,
+  "description": "AI-powered FHIR summarization platform with multi-persona support",
+  "author": "FHIR-IQ Team",
+  "license": "MIT",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:ci": "turbo test:ci",
+    "test:performance": "turbo test:performance",
+    "test:clinical": "turbo test:clinical",
+    "typecheck": "turbo typecheck",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo clean && rm -rf node_modules",
+    "changeset": "changeset",
+    "version-packages": "changeset version",
+    "release": "turbo build --filter=!@plumly/evaluator && changeset publish",
     "fhir:start": "docker-compose up -d",
     "fhir:stop": "docker-compose down",
-    "fhir:logs": "docker-compose logs -f hapi-fhir",
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.24.3",
-    "@types/fhir": "^0.0.36",
-    "autoprefixer": "^10.4.21",
-    "fhir": "^4.11.1",
-    "next": "^15.5.4",
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "three": "^0.180.0"
+    "fhir:logs": "docker-compose logs -f hapi-fhir"
   },
   "devDependencies": {
-    "@types/node": "^20",
-    "@types/react": "^18.3.24",
-    "@types/react-dom": "^18.3.7",
-    "@types/three": "^0.180.0",
-    "eslint": "^8",
-    "eslint-config-next": "15.0.3",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "@changesets/cli": "^2.27.1",
+    "@types/node": "^20.10.5",
+    "eslint": "^8.56.0",
+    "prettier": "^3.1.1",
+    "turbo": "^1.11.2",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "npm@10.2.3",
+  "engines": {
+    "node": ">=18.17.0",
+    "npm": ">=9.0.0"
   }
 }

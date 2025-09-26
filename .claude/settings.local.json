@@ -25,7 +25,19 @@
       "Bash(curl:*)",
       "Bash(unzip:*)",
       "Bash(while read file)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(jq:*)",
+      "Bash(cat:*)",
+      "Bash(node:*)",
+      "Bash(uv tool install:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m uv tool install:*)",
+      "Bash(python -m uv tool run specify:*)",
+      "Bash(C:\\Users\\default.LAPTOP-BOBEDDVK\\.local\\bin\\specify --help)",
+      "Bash(specify init:*)",
+      "Bash(python -m uv tool run:*)",
+      "Bash(/bashes)",
+      "Bash(npm test:*)"
     ],
     "deny": [],
     "ask": []

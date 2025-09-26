@@ -1,0 +1,210 @@
+name: Summary Evaluation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'packages/summarizer/**'
+      - 'packages/fhir-utils/**'
+      - 'packages/evaluator/**'
+      - 'apps/web/src/lib/claude-client.ts'
+      - 'apps/web/src/components/SummaryRenderer.tsx'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  evaluate:
+    name: Summary Quality Evaluation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build evaluator
+        run: |
+          cd packages/evaluator
+          npm run build
+
+      - name: Run evaluation suite
+        id: evaluate
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cd packages/evaluator
+          npm run evaluate:all
+          echo "evaluation_complete=true" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Upload evaluation report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evaluation-report
+          path: packages/evaluator/evaluation-report.md
+          retention-days: 30
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            let reportContent = '';
+            const reportPath = 'packages/evaluator/evaluation-report.md';
+
+            try {
+              if (fs.existsSync(reportPath)) {
+                reportContent = fs.readFileSync(reportPath, 'utf8');
+              } else {
+                reportContent = '❌ Evaluation report not found - check workflow logs for errors.';
+              }
+            } catch (error) {
+              reportContent = `❌ Failed to read evaluation report: ${error.message}`;
+            }
+
+            // Truncate if too long for GitHub comment
+            if (reportContent.length > 65000) {
+              reportContent = reportContent.substring(0, 65000) + '\n\n... (Report truncated - see full report in artifacts)';
+            }
+
+            const comment = `## 📊 Summary Evaluation Report
+
+            This PR has been automatically evaluated for summary quality and performance.
+
+            ${reportContent}
+
+            ---
+
+            <details>
+            <summary>About this evaluation</summary>
+
+            This automated evaluation tests:
+            - **Coverage**: Percentage of sentences with supporting FHIR references
+            - **Provenance**: Identification of claims without proper citations
+            - **Performance**: End-to-end summarization timing
+            - **Fixtures**: Standardized test cases for consistent evaluation
+
+            The evaluation uses real Claude API calls to ensure accuracy.
+            </details>`;
+
+            // Find existing comment to update or create new one
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number
+            });
+
+            const existingComment = comments.find(
+              comment => comment.body.includes('📊 Summary Evaluation Report')
+            );
+
+            if (existingComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existingComment.id,
+                body: comment
+              });
+              console.log('Updated existing evaluation comment');
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: comment
+              });
+              console.log('Created new evaluation comment');
+            }
+
+      - name: Performance regression check
+        if: github.event_name == 'pull_request'
+        run: |
+          cd packages/evaluator
+
+          # Extract performance metrics from report
+          if [ -f "evaluation-report.md" ]; then
+            echo "Checking for performance regressions..."
+
+            # Look for execution times > 60 seconds (60000ms)
+            SLOW_TESTS=$(grep -E "Time.*[0-9]{5,}" evaluation-report.md | grep -E "[6-9][0-9]{4,}|[1-9][0-9]{5,}" || true)
+
+            if [ ! -z "$SLOW_TESTS" ]; then
+              echo "⚠️ Performance Warning: Some tests took longer than expected:"
+              echo "$SLOW_TESTS"
+              echo "Consider optimizing summarization performance."
+            fi
+
+            # Look for coverage < 60%
+            LOW_COVERAGE=$(grep -E "Coverage.*[0-5][0-9]\.[0-9]%|Coverage.*[0-9]\.[0-9]%" evaluation-report.md || true)
+
+            if [ ! -z "$LOW_COVERAGE" ]; then
+              echo "⚠️ Coverage Warning: Some fixtures have low provenance coverage:"
+              echo "$LOW_COVERAGE"
+              echo "Consider improving reference attribution in summaries."
+              exit 1
+            fi
+          else
+            echo "❌ No evaluation report found - cannot check for regressions"
+            exit 1
+          fi
+
+  benchmark:
+    name: Performance Benchmark
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    needs: evaluate
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npm run build
+
+      - name: Build evaluator
+        run: |
+          cd packages/evaluator
+          npm run build
+
+      - name: Run performance benchmark
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          cd packages/evaluator
+          echo "Running performance benchmark on simple fixture..."
+          npm run evaluate:fixture simple-patient -- -o benchmark-report.md -v
+        continue-on-error: true
+
+      - name: Upload benchmark report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: benchmark-report
+          path: packages/evaluator/benchmark-report.md
+          retention-days: 7
