@@ -42,7 +42,9 @@
       "Read(//c/Users/default.LAPTOP-BOBEDDVK/OneDrive/Documents/**)",
       "WebFetch(domain:vercel.com)",
       "WebFetch(domain:plumly-meqaibr46-aks129s-projects.vercel.app)",
-      "WebFetch(domain:plumly-bzmdjxfxg-aks129s-projects.vercel.app)"
+      "WebFetch(domain:plumly-bzmdjxfxg-aks129s-projects.vercel.app)",
+      "WebFetch(domain:api.github.com)",
+      "WebFetch(domain:plumly.vercel.app)"
     ],
     "deny": [],
     "ask": []

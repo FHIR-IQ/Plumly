@@ -44,7 +44,7 @@ export default function PromptConfiguration({ onConfigChange, className = '' }: 
       const data = await response.json()
       if (data.success) {
         setTemplates(data.templates)
-        if (data.templates.length > 0) {
+        if (data.templates && data.templates.length > 0) {
           setSelectedTemplate(data.templates[0].id)
         }
       }
@@ -101,7 +101,7 @@ export default function PromptConfiguration({ onConfigChange, className = '' }: 
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
         >
           <option value="">Select a template...</option>
-          {templates.map((template) => (
+          {templates && templates.map((template) => (
             <option key={template.id} value={template.id}>
               {template.name}
             </option>

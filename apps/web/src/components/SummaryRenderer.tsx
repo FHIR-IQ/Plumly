@@ -46,7 +46,7 @@ export function SummaryRenderer({
   }
 
   const renderTextWithClaims = (content: string, claims: Claim[]) => {
-    if (!content || claims.length === 0) {
+    if (!content || !claims || claims.length === 0) {
       return <span className="text-gray-700">{content}</span>
     }
 
@@ -72,7 +72,7 @@ export function SummaryRenderer({
         // Add the claim as a chip for each referenced resource
         const matchedText = remainingText.substring(matchIndex, matchIndex + claim.text.length)
 
-        if (claim.refs.length > 0) {
+        if (claim.refs && claim.refs.length > 0) {
           // Create chips for each resource reference
           const chips = claim.refs.map((ref, refIndex) => {
             const rawData = findResourceData(ref)
@@ -128,19 +128,19 @@ export function SummaryRenderer({
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-lg font-semibold text-gray-900">{section.title}</h3>
           <div className="flex items-center gap-2 text-xs text-gray-500">
-            <span>Confidence: {Math.round(section.confidence * 100)}%</span>
+            <span>Confidence: {Math.round((section.confidence || 0) * 100)}%</span>
             <span>•</span>
-            <span>{section.claims.length} claims</span>
+            <span>{section.claims?.length || 0} claims</span>
           </div>
         </div>
 
         {/* Section Content with Claims */}
         <div className="prose prose-sm max-w-none mb-4">
-          {renderTextWithClaims(section.content, section.claims)}
+          {renderTextWithClaims(section.content, section.claims || [])}
         </div>
 
         {/* Source Information */}
-        {section.sources.length > 0 && (
+        {section.sources && section.sources.length > 0 && (
           <div className="pt-3 border-t border-gray-100">
             <div className="flex items-center gap-2 text-xs text-gray-500">
               <span className="font-medium">Sources:</span>
