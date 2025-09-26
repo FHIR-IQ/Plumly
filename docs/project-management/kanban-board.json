@@ -1,0 +1,452 @@
+{
+  "name": "Plumly vNext Development Board",
+  "description": "Comprehensive task tracking for FHIR summarization platform",
+  "columns": [
+    {
+      "id": "todo",
+      "name": "TODO",
+      "limit": null,
+      "tasks": []
+    },
+    {
+      "id": "in_progress",
+      "name": "IN PROGRESS",
+      "limit": 6,
+      "tasks": []
+    },
+    {
+      "id": "review",
+      "name": "REVIEW",
+      "limit": 4,
+      "tasks": []
+    },
+    {
+      "id": "done",
+      "name": "DONE",
+      "limit": null,
+      "tasks": []
+    }
+  ],
+  "workstreams": [
+    {
+      "id": "WS1",
+      "name": "Foundations",
+      "color": "#3B82F6",
+      "icon": "🏗️"
+    },
+    {
+      "id": "WS2",
+      "name": "Summarization Engine",
+      "color": "#8B5CF6",
+      "icon": "🧠"
+    },
+    {
+      "id": "WS3",
+      "name": "Provenance & Explainability",
+      "color": "#10B981",
+      "icon": "🔍"
+    },
+    {
+      "id": "WS4",
+      "name": "Visualizations",
+      "color": "#F59E0B",
+      "icon": "📊"
+    },
+    {
+      "id": "WS5",
+      "name": "Sharing & Export",
+      "color": "#EF4444",
+      "icon": "🔗"
+    },
+    {
+      "id": "WS6",
+      "name": "Evaluation & QA",
+      "color": "#06B6D4",
+      "icon": "✅"
+    }
+  ],
+  "tasks": [
+    {
+      "id": "T1.1",
+      "title": "Next.js 14 Project Scaffold",
+      "workstream": "WS1",
+      "priority": "P0",
+      "effort": 3,
+      "sprint": 1,
+      "owner": "Frontend Lead",
+      "status": "todo",
+      "description": "Set up the complete project foundation with Next.js 14, modern tooling, and CI/CD pipeline.",
+      "acceptance_criteria": [
+        "Application boots successfully on npm run dev",
+        "CI pipeline runs lint, test, build without errors",
+        "shadcn/ui components are installed and themed",
+        "TypeScript strict mode enabled and configured",
+        "Auto-deploy to staging on main branch push",
+        "Development environment documented in README"
+      ],
+      "dependencies": [],
+      "blockers": [],
+      "tags": ["setup", "infrastructure", "ci/cd"]
+    },
+    {
+      "id": "T1.2",
+      "title": "FHIR Upload & Parse Pathway",
+      "workstream": "WS1",
+      "priority": "P0",
+      "effort": 5,
+      "sprint": 1,
+      "owner": "Backend Developer",
+      "status": "todo",
+      "description": "Implement file upload system for FHIR Bundles with validation and basic resource counting.",
+      "acceptance_criteria": [
+        "Drag-drop interface accepts JSON files up to 10MB",
+        "Detects Bundle vs individual Resource types",
+        "Displays resource counts by type (Patient: 1, Observation: 45, etc.)",
+        "Shows meaningful error messages for invalid files",
+        "Handles malformed JSON gracefully",
+        "File processing completes in <2s for 5MB bundles"
+      ],
+      "dependencies": ["T1.1"],
+      "blockers": [],
+      "tags": ["fhir", "upload", "validation"]
+    },
+    {
+      "id": "T1.3",
+      "title": "Sandbox FHIR Server Integration",
+      "workstream": "WS1",
+      "priority": "P1",
+      "effort": 4,
+      "sprint": 2,
+      "owner": "Backend Developer",
+      "status": "todo",
+      "description": "Implement read-only connection to FHIR servers for live patient data fetching.",
+      "acceptance_criteria": [
+        "UI form accepts server URL and patient ID",
+        "Successfully fetches Bundle via Patient/$everything",
+        "Caches responses in memory for session duration",
+        "Validates server capabilities before fetching",
+        "Displays helpful errors for connection failures",
+        "Supports HAPI FHIR and SMART-enabled servers"
+      ],
+      "dependencies": ["T1.2"],
+      "blockers": ["Access to test FHIR servers"],
+      "tags": ["fhir", "integration", "server"]
+    },
+    {
+      "id": "T2.1",
+      "title": "Deterministic Resource Selection",
+      "workstream": "WS2",
+      "priority": "P0",
+      "effort": 6,
+      "sprint": 2,
+      "owner": "Backend Developer + Clinical Advisor",
+      "status": "todo",
+      "description": "Create algorithms to intelligently filter and select relevant clinical resources.",
+      "acceptance_criteria": [
+        "Returns most recent lab values for each LOINC code",
+        "Identifies active medications from MedicationRequest status",
+        "Filters chronic conditions (diabetes, hypertension, etc.)",
+        "Normalizes units (mg/dL vs mmol/L) with conversion factors",
+        "Includes relevance scores for resource selection",
+        "Handles missing or invalid dates gracefully"
+      ],
+      "dependencies": ["T1.2"],
+      "blockers": ["Clinical validation of selection criteria"],
+      "tags": ["algorithm", "clinical", "filtering"]
+    },
+    {
+      "id": "T2.2",
+      "title": "Persona Template System",
+      "workstream": "WS2",
+      "priority": "P0",
+      "effort": 5,
+      "sprint": 3,
+      "owner": "AI/Prompt Engineer + UX Designer",
+      "status": "todo",
+      "description": "Design and implement persona-specific prompt templates with section configuration.",
+      "acceptance_criteria": [
+        "Three distinct templates with different sections",
+        "Patient template uses 8th-grade reading level",
+        "Provider template includes clinical assessment sections",
+        "Caregiver template focuses on practical care tasks",
+        "Section manifests define what content appears when",
+        "Templates can be A/B tested with different approaches"
+      ],
+      "dependencies": ["T2.1"],
+      "blockers": ["Clinical review of template content"],
+      "tags": ["personas", "templates", "prompts"]
+    },
+    {
+      "id": "T2.3",
+      "title": "LLM Orchestration",
+      "workstream": "WS2",
+      "priority": "P0",
+      "effort": 7,
+      "sprint": 3,
+      "owner": "AI/Backend Developer",
+      "status": "todo",
+      "description": "Build robust Claude API integration with structured output parsing and error handling.",
+      "acceptance_criteria": [
+        "/api/summarize endpoint accepts normalized Bundle + persona",
+        "Returns structured JSON with sections and claims",
+        "Implements 3x retry with backoff for API failures",
+        "Validates all LLM responses against expected schema",
+        "Handles API rate limits gracefully",
+        "Processes 5MB bundle in <6 seconds end-to-end"
+      ],
+      "dependencies": ["T2.1", "T2.2"],
+      "blockers": ["Claude API rate limits and access"],
+      "tags": ["ai", "claude", "api", "orchestration"]
+    },
+    {
+      "id": "T3.1",
+      "title": "Claim Schema & Provenance Chips",
+      "workstream": "WS3",
+      "priority": "P0",
+      "effort": 4,
+      "sprint": 4,
+      "owner": "Frontend Developer",
+      "status": "todo",
+      "description": "Implement the core provenance system linking every AI claim to source FHIR resources.",
+      "acceptance_criteria": [
+        "Every AI-generated sentence includes traceable references",
+        "Hovering chip highlights corresponding source data",
+        "Chips are keyboard accessible (tab navigation, enter/space)",
+        "Visual distinction between high/medium/low confidence",
+        "Chips render without performance impact (<50ms)",
+        "Works correctly with screen readers"
+      ],
+      "dependencies": ["T2.3"],
+      "blockers": [],
+      "tags": ["provenance", "ui", "accessibility"]
+    },
+    {
+      "id": "T3.2",
+      "title": "Right-Pane Resource Inspector",
+      "workstream": "WS3",
+      "priority": "P0",
+      "effort": 5,
+      "sprint": 4,
+      "owner": "Frontend Developer",
+      "status": "todo",
+      "description": "Build detailed resource inspection panel for FHIR data exploration.",
+      "acceptance_criteria": [
+        "Clicking chip opens right panel with resource details",
+        "Panel shows both formatted view and raw JSON",
+        "Displays human-readable labels for medical codes",
+        "Formats dates and times appropriately",
+        "Panel is resizable and responsive on mobile",
+        "Search functionality works within large resources"
+      ],
+      "dependencies": ["T3.1"],
+      "blockers": [],
+      "tags": ["ui", "inspector", "fhir"]
+    },
+    {
+      "id": "T3.3",
+      "title": "Uncertainty & Confidence Flagging",
+      "workstream": "WS3",
+      "priority": "P1",
+      "effort": 3,
+      "sprint": 5,
+      "owner": "AI/Frontend Developer",
+      "status": "todo",
+      "description": "Implement visual indicators for AI confidence levels and uncertainty.",
+      "acceptance_criteria": [
+        "Claims below 80% confidence show uncertainty badge",
+        "Tooltip explains why confidence is low",
+        "Visual hierarchy clearly distinguishes confidence levels",
+        "Confidence scores are calibrated against clinical validation",
+        "Bulk analysis identifies summary quality issues",
+        "Dashboard shows confidence distribution per persona"
+      ],
+      "dependencies": ["T2.3"],
+      "blockers": ["Clinical validation data for calibration"],
+      "tags": ["confidence", "ui", "uncertainty"]
+    },
+    {
+      "id": "T4.1",
+      "title": "Labs & Vitals Time-Series Charts",
+      "workstream": "WS4",
+      "priority": "P1",
+      "effort": 6,
+      "sprint": 5,
+      "owner": "Frontend Developer",
+      "status": "todo",
+      "description": "Create interactive trend charts for laboratory values and vital signs.",
+      "acceptance_criteria": [
+        "Charts display HbA1c, LDL, BP trends over time",
+        "Reference range bands clearly visible",
+        "Out-of-range values highlighted in red/amber",
+        "Tooltips show exact values, dates, and source links",
+        "Charts render in <200ms after data load",
+        "Responsive design works on mobile devices"
+      ],
+      "dependencies": ["T2.1"],
+      "blockers": ["Reference range data sources"],
+      "tags": ["charts", "visualization", "labs"]
+    },
+    {
+      "id": "T4.2",
+      "title": "Medication Timeline Visualization",
+      "workstream": "WS4",
+      "priority": "P1",
+      "effort": 5,
+      "sprint": 6,
+      "owner": "Frontend Developer",
+      "status": "todo",
+      "description": "Build Gantt-style medication timeline showing starts, stops, and changes.",
+      "acceptance_criteria": [
+        "Timeline shows medication bars with duration",
+        "Start/stop/change events clearly marked",
+        "Overlapping medications highlighted for interaction review",
+        "Hover shows medication details and dosage",
+        "Timeline navigable across multiple years",
+        "Medications can be grouped by therapeutic class"
+      ],
+      "dependencies": ["T2.1"],
+      "blockers": ["Medication classification data"],
+      "tags": ["timeline", "medication", "gantt"]
+    },
+    {
+      "id": "T4.3",
+      "title": "What to Review Action Panel",
+      "workstream": "WS4",
+      "priority": "P1",
+      "effort": 4,
+      "sprint": 6,
+      "owner": "Backend + Frontend Developer",
+      "status": "todo",
+      "description": "Generate actionable clinical insights panel with prioritized review items.",
+      "acceptance_criteria": [
+        "Panel shows top N priority items (5-10)",
+        "Items link directly to relevant chart positions",
+        "Clicking item jumps to specific resource/observation",
+        "Risk scoring reflects clinical importance",
+        "Care gaps identified from guideline rules",
+        "Panel updates dynamically as data changes"
+      ],
+      "dependencies": ["T4.1", "T4.2"],
+      "blockers": ["Clinical risk scoring validation"],
+      "tags": ["clinical", "alerts", "priority"]
+    },
+    {
+      "id": "T5.1",
+      "title": "Secure Share Links",
+      "workstream": "WS5",
+      "priority": "P2",
+      "effort": 4,
+      "sprint": 7,
+      "owner": "Backend Developer",
+      "status": "todo",
+      "description": "Implement secure, time-limited sharing of patient summaries.",
+      "acceptance_criteria": [
+        "Generated URLs valid for exactly 7 days",
+        "Server verifies token signatures before access",
+        "Shared view is completely read-only",
+        "All access attempts are logged with timestamps",
+        "Links can be manually deactivated by creator",
+        "Expired links show helpful error messages"
+      ],
+      "dependencies": [],
+      "blockers": ["Security review and approval"],
+      "tags": ["sharing", "security", "tokens"]
+    },
+    {
+      "id": "T5.2",
+      "title": "PDF Export Functionality",
+      "workstream": "WS5",
+      "priority": "P2",
+      "effort": 5,
+      "sprint": 7,
+      "owner": "Backend Developer",
+      "status": "todo",
+      "description": "Generate high-quality PDF exports of patient summaries.",
+      "acceptance_criteria": [
+        "Server renders PDF from HTML with proper styling",
+        "Demo mode shows 'Not for clinical use' watermark",
+        "Optional appendix includes provenance details",
+        "Charts and visualizations included in PDF",
+        "PDF generation completes in <10 seconds",
+        "Generated PDFs are properly formatted and readable"
+      ],
+      "dependencies": ["T4.1", "T4.2"],
+      "blockers": ["PDF rendering infrastructure setup"],
+      "tags": ["pdf", "export", "rendering"]
+    },
+    {
+      "id": "T6.1",
+      "title": "Golden Sample Test Suite",
+      "workstream": "WS6",
+      "priority": "P0",
+      "effort": 6,
+      "sprint": 8,
+      "owner": "Clinical Advisor + QA Engineer",
+      "status": "todo",
+      "description": "Create comprehensive test suite with clinical validation data.",
+      "acceptance_criteria": [
+        "Test fixtures committed to repository",
+        "Golden summaries reviewed by clinical experts",
+        "Snapshot tests pass for all persona types",
+        "Accuracy scoring compares AI vs golden summaries",
+        "Test suite covers edge cases and error conditions",
+        "Regression tests catch summary quality degradation"
+      ],
+      "dependencies": ["T2.3"],
+      "blockers": ["Clinical expert availability for reviews"],
+      "tags": ["testing", "clinical", "validation"]
+    },
+    {
+      "id": "T6.2",
+      "title": "Evaluator Harness & Metrics",
+      "workstream": "WS6",
+      "priority": "P0",
+      "effort": 5,
+      "sprint": 9,
+      "owner": "Backend + QA Engineer",
+      "status": "todo",
+      "description": "Build automated evaluation system for summary quality and performance.",
+      "acceptance_criteria": [
+        "Reports % of claims with valid FHIR references",
+        "Factuality checklist validates medical claims",
+        "Time-to-summary measured for different bundle sizes",
+        "Quality metrics tracked over time",
+        "Batch evaluation runs on all test cases",
+        "Dashboard shows quality trends and regressions"
+      ],
+      "dependencies": ["T6.1"],
+      "blockers": [],
+      "tags": ["metrics", "evaluation", "quality"]
+    },
+    {
+      "id": "T6.3",
+      "title": "End-to-End Test Automation",
+      "workstream": "WS6",
+      "priority": "P0",
+      "effort": 4,
+      "sprint": 9,
+      "owner": "QA Engineer",
+      "status": "todo",
+      "description": "Create comprehensive Playwright test suite for complete user workflows.",
+      "acceptance_criteria": [
+        "Playwright tests cover complete user journey",
+        "Upload, summarize, persona toggle flow automated",
+        "Provenance chip opening and inspection tested",
+        "PDF export download and validation automated",
+        "Performance tests validate <6s summarization",
+        "Tests run in CI on Chrome, Firefox, Safari"
+      ],
+      "dependencies": ["T1.2", "T2.3", "T3.1", "T5.2"],
+      "blockers": ["Test environment stability"],
+      "tags": ["e2e", "playwright", "automation"]
+    }
+  ],
+  "metadata": {
+    "created": "2025-01-26",
+    "version": "1.0",
+    "total_tasks": 18,
+    "total_effort_days": 82,
+    "estimated_duration_weeks": 12,
+    "team_size_recommended": "4-6 developers"
+  }
+}

@@ -1,0 +1,646 @@
+# GitHub Issues Template for Plumly vNext
+# Import these via GitHub CLI: gh issue create --title --body --assignee --label
+
+issues:
+  - title: "[T1.1] Next.js 14 Project Scaffold with Tailwind/shadcn and CI"
+    body: |
+      ## Description
+      Set up the complete project foundation with Next.js 14, modern tooling, and CI/CD pipeline.
+
+      ## Acceptance Criteria
+      - [ ] Application boots successfully on `npm run dev`
+      - [ ] CI pipeline runs lint, test, build without errors
+      - [ ] shadcn/ui components are installed and themed
+      - [ ] TypeScript strict mode enabled and configured
+      - [ ] Auto-deploy to staging on main branch push
+      - [ ] Development environment documented in README
+
+      ## Tasks
+      - [ ] Initialize Next.js 14 with App Router and TypeScript
+      - [ ] Configure Tailwind CSS with design system
+      - [ ] Install and configure shadcn/ui components
+      - [ ] Set up monorepo structure with packages
+      - [ ] Configure ESLint, Prettier, and Husky hooks
+      - [ ] Create GitHub Actions CI/CD pipeline
+      - [ ] Set up Vercel deployment configuration
+
+      ## Definition of Done
+      - [ ] All acceptance criteria verified
+      - [ ] Code reviewed and merged
+      - [ ] CI/CD pipeline successfully running
+      - [ ] Documentation updated
+
+      **Priority**: P0 | **Effort**: 3 days | **Sprint**: 1
+    labels: [
+      "workstream:foundations",
+      "priority:P0",
+      "type:setup",
+      "effort:3d"
+    ]
+    assignees: []
+    milestone: "Sprint 1"
+
+  - title: "[T1.2] FHIR Upload & Parse Pathway"
+    body: |
+      ## Description
+      Implement file upload system for FHIR Bundles with validation and basic resource counting.
+
+      ## Acceptance Criteria
+      - [ ] Drag-drop interface accepts JSON files up to 10MB
+      - [ ] Detects Bundle vs individual Resource types
+      - [ ] Displays resource counts by type (Patient: 1, Observation: 45, etc.)
+      - [ ] Shows meaningful error messages for invalid files
+      - [ ] Handles malformed JSON gracefully
+      - [ ] File processing completes in <2s for 5MB bundles
+
+      ## Tasks
+      - [ ] Create drag-and-drop file upload component
+      - [ ] Implement FHIR Bundle validation logic
+      - [ ] Add single resource detection and handling
+      - [ ] Create resource type counting and display
+      - [ ] Add file size limits and error handling
+      - [ ] Implement progress indicators for large files
+      - [ ] Add MIME type validation and security checks
+
+      ## Dependencies
+      - Depends on T1.1 (Project scaffold)
+
+      **Priority**: P0 | **Effort**: 5 days | **Sprint**: 1-2
+    labels: [
+      "workstream:foundations",
+      "priority:P0",
+      "type:feature",
+      "effort:5d"
+    ]
+    assignees: []
+    milestone: "Sprint 1"
+
+  - title: "[T1.3] Sandbox FHIR Server Integration"
+    body: |
+      ## Description
+      Implement read-only connection to FHIR servers for live patient data fetching.
+
+      ## Acceptance Criteria
+      - [ ] UI form accepts server URL and patient ID
+      - [ ] Successfully fetches Bundle via Patient/$everything
+      - [ ] Caches responses in memory for session duration
+      - [ ] Validates server capabilities before fetching
+      - [ ] Displays helpful errors for connection failures
+      - [ ] Supports HAPI FHIR and SMART-enabled servers
+
+      ## Tasks
+      - [ ] Create FHIR server connection interface
+      - [ ] Implement $everything endpoint integration
+      - [ ] Add server capability validation
+      - [ ] Create in-memory caching system
+      - [ ] Add connection error handling
+      - [ ] Implement server URL validation
+      - [ ] Add authentication support for SMART servers
+
+      ## Dependencies
+      - Depends on T1.2 (Upload pathway for result processing)
+
+      ## Blockers
+      - Need access to test FHIR servers
+
+      **Priority**: P1 | **Effort**: 4 days | **Sprint**: 2
+    labels: [
+      "workstream:foundations",
+      "priority:P1",
+      "type:integration",
+      "effort:4d"
+    ]
+    assignees: []
+    milestone: "Sprint 2"
+
+  - title: "[T2.1] Deterministic Resource Selection"
+    body: |
+      ## Description
+      Create algorithms to intelligently filter and select relevant clinical resources.
+
+      ## Acceptance Criteria
+      - [ ] Returns most recent lab values for each LOINC code
+      - [ ] Identifies active medications from MedicationRequest status
+      - [ ] Filters chronic conditions (diabetes, hypertension, etc.)
+      - [ ] Normalizes units (mg/dL vs mmol/L) with conversion factors
+      - [ ] Includes relevance scores for resource selection
+      - [ ] Handles missing or invalid dates gracefully
+
+      ## Tasks
+      - [ ] Implement "recent labs" selection (last 2 years)
+      - [ ] Create "active medications" filtering logic
+      - [ ] Build "chronic conditions" identification
+      - [ ] Add unit normalization for lab values
+      - [ ] Create resource relevance scoring
+      - [ ] Implement date-based filtering utilities
+      - [ ] Add clinical code system lookups
+
+      ## Dependencies
+      - Depends on T1.2 (FHIR parsing infrastructure)
+
+      ## Blockers
+      - Need clinical validation of selection criteria
+
+      **Priority**: P0 | **Effort**: 6 days | **Sprint**: 2-3
+    labels: [
+      "workstream:summarization",
+      "priority:P0",
+      "type:algorithm",
+      "effort:6d"
+    ]
+    assignees: []
+    milestone: "Sprint 2"
+
+  - title: "[T2.2] Persona Template System"
+    body: |
+      ## Description
+      Design and implement persona-specific prompt templates with section configuration.
+
+      ## Acceptance Criteria
+      - [ ] Three distinct templates with different sections
+      - [ ] Patient template uses 8th-grade reading level
+      - [ ] Provider template includes clinical assessment sections
+      - [ ] Caregiver template focuses on practical care tasks
+      - [ ] Section manifests define what content appears when
+      - [ ] Templates can be A/B tested with different approaches
+
+      ## Tasks
+      - [ ] Create Patient persona template (plain language)
+      - [ ] Design Provider persona template (clinical terminology)
+      - [ ] Build Caregiver persona template (practical focus)
+      - [ ] Implement section manifest system
+      - [ ] Create template inheritance and overrides
+      - [ ] Add tone and terminology configuration
+      - [ ] Design template testing framework
+
+      ## Dependencies
+      - Depends on T2.1 (Resource selection for prompt content)
+
+      ## Blockers
+      - Need clinical review of template content
+
+      **Priority**: P0 | **Effort**: 5 days | **Sprint**: 3
+    labels: [
+      "workstream:summarization",
+      "priority:P0",
+      "type:templates",
+      "effort:5d"
+    ]
+    assignees: []
+    milestone: "Sprint 3"
+
+  - title: "[T2.3] LLM Orchestration"
+    body: |
+      ## Description
+      Build robust Claude API integration with structured output parsing and error handling.
+
+      ## Acceptance Criteria
+      - [ ] `/api/summarize` endpoint accepts normalized Bundle + persona
+      - [ ] Returns structured JSON with sections and claims
+      - [ ] Implements 3x retry with backoff for API failures
+      - [ ] Validates all LLM responses against expected schema
+      - [ ] Handles API rate limits gracefully
+      - [ ] Processes 5MB bundle in <6 seconds end-to-end
+
+      ## Tasks
+      - [ ] Create Claude API client with authentication
+      - [ ] Implement structured JSON output parsing
+      - [ ] Add retry logic with exponential backoff
+      - [ ] Create prompt assembly pipeline
+      - [ ] Implement response validation and sanitization
+      - [ ] Add rate limiting and quota management
+      - [ ] Create summarization result caching
+
+      ## Dependencies
+      - Depends on T2.1, T2.2 (Resource selection and templates)
+
+      ## Blockers
+      - Claude API rate limits and access confirmation needed
+
+      **Priority**: P0 | **Effort**: 7 days | **Sprint**: 3-4
+    labels: [
+      "workstream:summarization",
+      "priority:P0",
+      "type:integration",
+      "effort:7d"
+    ]
+    assignees: []
+    milestone: "Sprint 3"
+
+  - title: "[T3.1] Claim Schema & Provenance Chips"
+    body: |
+      ## Description
+      Implement the core provenance system linking every AI claim to source FHIR resources.
+
+      ## Acceptance Criteria
+      - [ ] Every AI-generated sentence includes traceable references
+      - [ ] Hovering chip highlights corresponding source data
+      - [ ] Chips are keyboard accessible (tab navigation, enter/space)
+      - [ ] Visual distinction between high/medium/low confidence
+      - [ ] Chips render without performance impact (<50ms)
+      - [ ] Works correctly with screen readers
+
+      ## Tasks
+      - [ ] Design Claim data structure with FHIR references
+      - [ ] Create ProvenanceChip React component
+      - [ ] Implement hover highlighting for source references
+      - [ ] Add keyboard accessibility for chip navigation
+      - [ ] Create chip styling variants (confidence levels)
+      - [ ] Implement click handling for detailed inspection
+      - [ ] Add batch chip rendering optimization
+
+      ## Dependencies
+      - Depends on T2.3 (Structured LLM output with references)
+
+      **Priority**: P0 | **Effort**: 4 days | **Sprint**: 4
+    labels: [
+      "workstream:provenance",
+      "priority:P0",
+      "type:ui",
+      "effort:4d"
+    ]
+    assignees: []
+    milestone: "Sprint 4"
+
+  - title: "[T3.2] Right-Pane Resource Inspector"
+    body: |
+      ## Description
+      Build detailed resource inspection panel for FHIR data exploration.
+
+      ## Acceptance Criteria
+      - [ ] Clicking chip opens right panel with resource details
+      - [ ] Panel shows both formatted view and raw JSON
+      - [ ] Displays human-readable labels for medical codes
+      - [ ] Formats dates and times appropriately
+      - [ ] Panel is resizable and responsive on mobile
+      - [ ] Search functionality works within large resources
+
+      ## Tasks
+      - [ ] Create sliding right panel component
+      - [ ] Implement formatted FHIR resource display
+      - [ ] Add raw JSON view with syntax highlighting
+      - [ ] Create human-readable labels for codes
+      - [ ] Add date formatting and timezone handling
+      - [ ] Implement search and filtering within resources
+      - [ ] Add breadcrumb navigation for nested data
+
+      ## Dependencies
+      - Depends on T3.1 (Provenance chip system)
+
+      **Priority**: P0 | **Effort**: 5 days | **Sprint**: 4-5
+    labels: [
+      "workstream:provenance",
+      "priority:P0",
+      "type:ui",
+      "effort:5d"
+    ]
+    assignees: []
+    milestone: "Sprint 4"
+
+  - title: "[T3.3] Uncertainty & Confidence Flagging"
+    body: |
+      ## Description
+      Implement visual indicators for AI confidence levels and uncertainty.
+
+      ## Acceptance Criteria
+      - [ ] Claims below 80% confidence show uncertainty badge
+      - [ ] Tooltip explains why confidence is low
+      - [ ] Visual hierarchy clearly distinguishes confidence levels
+      - [ ] Confidence scores are calibrated against clinical validation
+      - [ ] Bulk analysis identifies summary quality issues
+      - [ ] Dashboard shows confidence distribution per persona
+
+      ## Tasks
+      - [ ] Design confidence scoring algorithm
+      - [ ] Create uncertainty badge component
+      - [ ] Implement tooltip explanations for low confidence
+      - [ ] Add visual indicators in summary text
+      - [ ] Create confidence threshold configuration
+      - [ ] Implement bulk confidence analysis
+      - [ ] Add confidence reporting dashboard
+
+      ## Dependencies
+      - Depends on T2.3 (LLM output with confidence scores)
+
+      ## Blockers
+      - Need clinical validation data for calibration
+
+      **Priority**: P1 | **Effort**: 3 days | **Sprint**: 5
+    labels: [
+      "workstream:provenance",
+      "priority:P1",
+      "type:feature",
+      "effort:3d"
+    ]
+    assignees: []
+    milestone: "Sprint 5"
+
+  - title: "[T4.1] Labs & Vitals Time-Series Charts"
+    body: |
+      ## Description
+      Create interactive trend charts for laboratory values and vital signs.
+
+      ## Acceptance Criteria
+      - [ ] Charts display HbA1c, LDL, BP trends over time
+      - [ ] Reference range bands clearly visible
+      - [ ] Out-of-range values highlighted in red/amber
+      - [ ] Tooltips show exact values, dates, and source links
+      - [ ] Charts render in <200ms after data load
+      - [ ] Responsive design works on mobile devices
+
+      ## Tasks
+      - [ ] Implement Recharts time-series components
+      - [ ] Add reference range visualization (normal bands)
+      - [ ] Create out-of-range highlighting
+      - [ ] Implement interactive tooltips with provenance
+      - [ ] Add chart controls (zoom, pan, date range)
+      - [ ] Create multi-metric overlay capabilities
+      - [ ] Optimize performance for large datasets
+
+      ## Dependencies
+      - Depends on T2.1 (Resource selection with lab values)
+
+      ## Blockers
+      - Need reference range data sources
+
+      **Priority**: P1 | **Effort**: 6 days | **Sprint**: 5-6
+    labels: [
+      "workstream:visualization",
+      "priority:P1",
+      "type:charts",
+      "effort:6d"
+    ]
+    assignees: []
+    milestone: "Sprint 5"
+
+  - title: "[T4.2] Medication Timeline Visualization"
+    body: |
+      ## Description
+      Build Gantt-style medication timeline showing starts, stops, and changes.
+
+      ## Acceptance Criteria
+      - [ ] Timeline shows medication bars with duration
+      - [ ] Start/stop/change events clearly marked
+      - [ ] Overlapping medications highlighted for interaction review
+      - [ ] Hover shows medication details and dosage
+      - [ ] Timeline navigable across multiple years
+      - [ ] Medications can be grouped by therapeutic class
+
+      ## Tasks
+      - [ ] Create horizontal timeline component
+      - [ ] Implement medication bar rendering
+      - [ ] Add start/stop/change markers
+      - [ ] Highlight medication overlaps
+      - [ ] Create hover interactions for details
+      - [ ] Add medication grouping by class
+      - [ ] Implement timeline zoom and navigation
+
+      ## Dependencies
+      - Depends on T2.1 (Medication resource processing)
+
+      ## Blockers
+      - Need medication classification data
+
+      **Priority**: P1 | **Effort**: 5 days | **Sprint**: 6
+    labels: [
+      "workstream:visualization",
+      "priority:P1",
+      "type:timeline",
+      "effort:5d"
+    ]
+    assignees: []
+    milestone: "Sprint 6"
+
+  - title: "[T4.3] What to Review Action Panel"
+    body: |
+      ## Description
+      Generate actionable clinical insights panel with prioritized review items.
+
+      ## Acceptance Criteria
+      - [ ] Panel shows top N priority items (5-10)
+      - [ ] Items link directly to relevant chart positions
+      - [ ] Clicking item jumps to specific resource/observation
+      - [ ] Risk scoring reflects clinical importance
+      - [ ] Care gaps identified from guideline rules
+      - [ ] Panel updates dynamically as data changes
+
+      ## Tasks
+      - [ ] Implement clinical risk scoring algorithms
+      - [ ] Create action item prioritization logic
+      - [ ] Build interactive action panel component
+      - [ ] Add links to specific chart positions
+      - [ ] Create resource jump-to functionality
+      - [ ] Implement care gap detection
+      - [ ] Add customizable action item types
+
+      ## Dependencies
+      - Depends on T4.1, T4.2 (Chart components for linking)
+
+      ## Blockers
+      - Need clinical risk scoring validation
+
+      **Priority**: P1 | **Effort**: 4 days | **Sprint**: 6-7
+    labels: [
+      "workstream:visualization",
+      "priority:P1",
+      "type:clinical",
+      "effort:4d"
+    ]
+    assignees: []
+    milestone: "Sprint 6"
+
+  - title: "[T5.1] Secure Share Links"
+    body: |
+      ## Description
+      Implement secure, time-limited sharing of patient summaries.
+
+      ## Acceptance Criteria
+      - [ ] Generated URLs valid for exactly 7 days
+      - [ ] Server verifies token signatures before access
+      - [ ] Shared view is completely read-only
+      - [ ] All access attempts are logged with timestamps
+      - [ ] Links can be manually deactivated by creator
+      - [ ] Expired links show helpful error messages
+
+      ## Tasks
+      - [ ] Create signed token generation system
+      - [ ] Implement share link validation middleware
+      - [ ] Add 7-day expiration enforcement
+      - [ ] Create read-only summary view
+      - [ ] Add share link management dashboard
+      - [ ] Implement access logging and analytics
+      - [ ] Add link deactivation functionality
+
+      ## Blockers
+      - Need security review and approval
+
+      **Priority**: P2 | **Effort**: 4 days | **Sprint**: 7
+    labels: [
+      "workstream:sharing",
+      "priority:P2",
+      "type:security",
+      "effort:4d"
+    ]
+    assignees: []
+    milestone: "Sprint 7"
+
+  - title: "[T5.2] PDF Export Functionality"
+    body: |
+      ## Description
+      Generate high-quality PDF exports of patient summaries.
+
+      ## Acceptance Criteria
+      - [ ] Server renders PDF from HTML with proper styling
+      - [ ] Demo mode shows "Not for clinical use" watermark
+      - [ ] Optional appendix includes provenance details
+      - [ ] Charts and visualizations included in PDF
+      - [ ] PDF generation completes in <10 seconds
+      - [ ] Generated PDFs are properly formatted and readable
+
+      ## Tasks
+      - [ ] Set up server-side PDF rendering (Puppeteer)
+      - [ ] Create PDF-optimized HTML templates
+      - [ ] Implement demo mode watermarking
+      - [ ] Add optional provenance appendix
+      - [ ] Create PDF styling and layout
+      - [ ] Add chart embedding in PDF
+      - [ ] Implement PDF generation queue
+
+      ## Dependencies
+      - Depends on visualization components for chart embedding
+
+      ## Blockers
+      - Need PDF rendering infrastructure setup
+
+      **Priority**: P2 | **Effort**: 5 days | **Sprint**: 7-8
+    labels: [
+      "workstream:sharing",
+      "priority:P2",
+      "type:export",
+      "effort:5d"
+    ]
+    assignees: []
+    milestone: "Sprint 7"
+
+  - title: "[T6.1] Golden Sample Test Suite"
+    body: |
+      ## Description
+      Create comprehensive test suite with clinical validation data.
+
+      ## Acceptance Criteria
+      - [ ] Test fixtures committed to repository
+      - [ ] Golden summaries reviewed by clinical experts
+      - [ ] Snapshot tests pass for all persona types
+      - [ ] Accuracy scoring compares AI vs golden summaries
+      - [ ] Test suite covers edge cases and error conditions
+      - [ ] Regression tests catch summary quality degradation
+
+      ## Tasks
+      - [ ] Curate 20+ synthetic patient bundles
+      - [ ] Generate clinician-reviewed "golden" summaries
+      - [ ] Create snapshot testing framework
+      - [ ] Add regression testing for summary changes
+      - [ ] Implement automated accuracy scoring
+      - [ ] Create test data management system
+      - [ ] Add edge case test scenarios
+
+      ## Dependencies
+      - Depends on T2.3 (Working summarization engine)
+
+      ## Blockers
+      - Need clinical expert availability for reviews
+
+      **Priority**: P0 | **Effort**: 6 days | **Sprint**: 8-9
+    labels: [
+      "workstream:qa",
+      "priority:P0",
+      "type:testing",
+      "effort:6d"
+    ]
+    assignees: []
+    milestone: "Sprint 8"
+
+  - title: "[T6.2] Evaluator Harness & Metrics"
+    body: |
+      ## Description
+      Build automated evaluation system for summary quality and performance.
+
+      ## Acceptance Criteria
+      - [ ] Reports % of claims with valid FHIR references
+      - [ ] Factuality checklist validates medical claims
+      - [ ] Time-to-summary measured for different bundle sizes
+      - [ ] Quality metrics tracked over time
+      - [ ] Batch evaluation runs on all test cases
+      - [ ] Dashboard shows quality trends and regressions
+
+      ## Tasks
+      - [ ] Create provenance coverage calculator
+      - [ ] Implement factual accuracy checklist
+      - [ ] Add performance timing measurements
+      - [ ] Create quality metrics dashboard
+      - [ ] Implement batch evaluation pipeline
+      - [ ] Add A/B testing framework
+      - [ ] Create evaluation reporting system
+
+      ## Dependencies
+      - Depends on T6.1 (Golden samples for validation)
+
+      **Priority**: P0 | **Effort**: 5 days | **Sprint**: 9
+    labels: [
+      "workstream:qa",
+      "priority:P0",
+      "type:metrics",
+      "effort:5d"
+    ]
+    assignees: []
+    milestone: "Sprint 9"
+
+  - title: "[T6.3] End-to-End Test Automation"
+    body: |
+      ## Description
+      Create comprehensive Playwright test suite for complete user workflows.
+
+      ## Acceptance Criteria
+      - [ ] Playwright tests cover complete user journey
+      - [ ] Upload, summarize, persona toggle flow automated
+      - [ ] Provenance chip opening and inspection tested
+      - [ ] PDF export download and validation automated
+      - [ ] Performance tests validate <6s summarization
+      - [ ] Tests run in CI on Chrome, Firefox, Safari
+
+      ## Tasks
+      - [ ] Set up Playwright testing framework
+      - [ ] Create upload → summarize → toggle workflow
+      - [ ] Add provenance chip interaction tests
+      - [ ] Implement PDF export testing
+      - [ ] Create performance test scenarios
+      - [ ] Add cross-browser testing
+      - [ ] Create CI integration for E2E tests
+
+      ## Dependencies
+      - Depends on all major features (integration testing)
+
+      ## Blockers
+      - Need test environment stability
+
+      **Priority**: P0 | **Effort**: 4 days | **Sprint**: 9-10
+    labels: [
+      "workstream:qa",
+      "priority:P0",
+      "type:e2e",
+      "effort:4d"
+    ]
+    assignees: []
+    milestone: "Sprint 9"
+
+# Import instructions:
+# 1. Save this file as github-issues.yml
+# 2. Use GitHub CLI to create issues:
+#    for issue in $(cat github-issues.yml | yq '.issues[] | @base64'); do
+#      _jq() { echo ${issue} | base64 --decode | jq -r ${1}; }
+#      gh issue create \
+#        --title "$(_jq '.title')" \
+#        --body "$(_jq '.body')" \
+#        --label "$(_jq '.labels | join(",")')" \
+#        --milestone "$(_jq '.milestone')"
+#    done
