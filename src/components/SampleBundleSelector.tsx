@@ -22,63 +22,63 @@ const sampleBundles: SampleBundle[] = [
   {
     id: 'robert_botsford',
     name: 'Robert Botsford',
-    description: 'Adult male with diabetes and hypertension',
-    conditions: ['Diabetes Type 2', 'Hypertension', 'Medication Management'],
-    age: 69,
-    gender: 'Male',
-    fileSize: '637 KB'
+    description: 'Elderly female with prediabetes and hypertension',
+    conditions: ['Hypertension', 'Prediabetes', 'Anemia', 'Osteoarthritis'],
+    age: 78,
+    gender: 'Female',
+    fileSize: '638 KB'
   },
   {
     id: 'gianna_mcclure',
     name: 'Gianna McClure',
-    description: 'Young adult female with routine preventive care',
-    conditions: ['Wellness Checks', 'Immunizations', 'Contraceptive Management'],
-    age: 24,
+    description: 'Young child with minimal medical history',
+    conditions: ['Routine pediatric care'],
+    age: 7,
     gender: 'Female',
     fileSize: '345 KB'
   },
   {
     id: 'harrison_schuster',
     name: 'Harrison Schuster',
-    description: 'Older adult with complex medical history',
-    conditions: ['COPD', 'Heart Disease', 'Multiple Medications'],
-    age: 78,
+    description: 'Centenarian with complex medical conditions',
+    conditions: ['Diabetes', 'Cardiac Arrest', 'Lung Cancer', 'Kidney Disease'],
+    age: 113,
     gender: 'Male',
     fileSize: '4.4 MB'
   },
   {
     id: 'maria_mante',
     name: 'Maria Mante',
-    description: 'Middle-aged female with chronic conditions',
-    conditions: ['Arthritis', 'Depression', 'Osteoporosis'],
-    age: 52,
-    gender: 'Female',
-    fileSize: '789 KB'
+    description: 'Pre-teen male with minimal medical history',
+    conditions: ['Routine pediatric care'],
+    age: 11,
+    gender: 'Male',
+    fileSize: '572 KB'
   },
   {
     id: 'maxwell_koepp',
     name: 'Maxwell Koepp',
-    description: 'Adult male with mental health conditions',
-    conditions: ['Anxiety Disorder', 'Depression', 'Therapy Notes'],
-    age: 35,
+    description: 'Elderly male with diabetes and complications',
+    conditions: ['Diabetes', 'Hypertension', 'Diabetic Neuropathy', 'Diabetic Retinopathy'],
+    age: 67,
     gender: 'Male',
     fileSize: '741 KB'
   },
   {
     id: 'will_lang',
     name: 'Will Lang',
-    description: 'Young adult male with sports injury history',
-    conditions: ['Orthopedic Injuries', 'Physical Therapy', 'Sports Medicine'],
-    age: 28,
+    description: 'Teenager with minimal medical history',
+    conditions: ['Routine care'],
+    age: 13,
     gender: 'Male',
-    fileSize: '722 KB'
+    fileSize: '721 KB'
   },
   {
     id: 'shelia_sipes',
     name: 'Shelia Sipes',
-    description: 'Adult female with pregnancy and prenatal care',
-    conditions: ['Pregnancy', 'Prenatal Care', 'Delivery Records'],
-    age: 31,
+    description: 'Young child with minimal medical history',
+    conditions: ['Routine pediatric care'],
+    age: 7,
     gender: 'Female',
     fileSize: '346 KB'
   }
