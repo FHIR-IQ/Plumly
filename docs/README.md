@@ -4,6 +4,8 @@ Welcome to the Plumly documentation repository. This directory contains comprehe
 
 ## Documentation Structure
 
+This project follows **Spec-Driven Development** (SDD) practices using GitHub's spec-kit standards. See [SPEC_DRIVEN_DEVELOPMENT.md](../SPEC_DRIVEN_DEVELOPMENT.md) for detailed process information.
+
 ```
 docs/
 ├── README.md                    # This file - documentation index
@@ -14,8 +16,15 @@ docs/
 ├── adr/                         # Architecture Decision Records
 │   ├── 001-technology-stack-selection.md
 │   └── 002-prompt-template-architecture.md
-└── architecture/                # System architecture documentation
-    └── system-overview.md
+├── architecture/                # System architecture documentation
+│   └── system-overview.md
+├── rfcs/                        # Request for Comments (major proposals)
+│   └── README.md
+├── runbooks/                    # Operational procedures
+│   └── README.md
+└── templates/                   # Documentation templates
+    ├── README.md
+    └── adr-template.md
 ```
 
 ## Quick Start Documentation
