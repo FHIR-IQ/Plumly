@@ -142,18 +142,18 @@ export default function SummaryOutput({
                 </div>
                 <div>
                   <dt className="font-medium text-gray-700">Target Audience</dt>
-                  <dd className="text-gray-600 capitalize">{metadata.options.targetAudience}</dd>
+                  <dd className="text-gray-600 capitalize">{metadata.options?.targetAudience || 'Not specified'}</dd>
                 </div>
                 <div>
                   <dt className="font-medium text-gray-700">Output Format</dt>
-                  <dd className="text-gray-600 capitalize">{metadata.options.outputFormat}</dd>
+                  <dd className="text-gray-600 capitalize">{metadata.options?.outputFormat || 'Not specified'}</dd>
                 </div>
                 <div>
                   <dt className="font-medium text-gray-700">Recommendations</dt>
-                  <dd className="text-gray-600">{metadata.options.includeRecommendations ? 'Included' : 'Not included'}</dd>
+                  <dd className="text-gray-600">{metadata.options?.includeRecommendations ? 'Included' : 'Not included'}</dd>
                 </div>
               </dl>
-              {metadata.options.focusAreas && metadata.options.focusAreas.length > 0 && (
+              {metadata.options?.focusAreas && Array.isArray(metadata.options.focusAreas) && metadata.options.focusAreas.length > 0 && (
                 <div className="mt-3">
                   <dt className="font-medium text-gray-700">Focus Areas</dt>
                   <dd className="text-gray-600 mt-1">
@@ -170,30 +170,34 @@ export default function SummaryOutput({
             </div>
 
             {/* Resource Counts */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h4 className="font-medium text-blue-900 mb-3">FHIR Resources Processed</h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                {Object.entries(metadata.resourceCounts)
-                  .filter(([key]) => key !== 'Total')
-                  .map(([resourceType, count]) => (
-                    <div key={resourceType} className="text-center">
-                      <div className="text-lg font-semibold text-blue-700">{count}</div>
-                      <div className="text-sm text-blue-600">{resourceType}</div>
-                    </div>
-                  ))}
+            {metadata.resourceCounts && typeof metadata.resourceCounts === 'object' && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <h4 className="font-medium text-blue-900 mb-3">FHIR Resources Processed</h4>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {Object.entries(metadata.resourceCounts)
+                    .filter(([key]) => key !== 'Total')
+                    .map(([resourceType, count]) => (
+                      <div key={resourceType} className="text-center">
+                        <div className="text-lg font-semibold text-blue-700">{count}</div>
+                        <div className="text-sm text-blue-600">{resourceType}</div>
+                      </div>
+                    ))}
+                </div>
+                {metadata.resourceCounts.Total && (
+                  <div className="mt-4 pt-3 border-t border-blue-200 text-center">
+                    <div className="text-xl font-bold text-blue-800">{metadata.resourceCounts.Total}</div>
+                    <div className="text-sm text-blue-600">Total Resources</div>
+                  </div>
+                )}
               </div>
-              <div className="mt-4 pt-3 border-t border-blue-200 text-center">
-                <div className="text-xl font-bold text-blue-800">{metadata.resourceCounts.Total}</div>
-                <div className="text-sm text-blue-600">Total Resources</div>
-              </div>
-            </div>
+            )}
 
             {/* Prompt Preview */}
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
               <h4 className="font-medium text-gray-900 mb-3">Prompt Used</h4>
               <div className="bg-white border border-gray-200 rounded p-3 max-h-40 overflow-y-auto">
                 <pre className="text-xs text-gray-600 whitespace-pre-wrap">
-                  {metadata.options.templateId || 'Custom prompt'}
+                  {metadata.options?.templateId || 'Custom prompt'}
                 </pre>
               </div>
             </div>
