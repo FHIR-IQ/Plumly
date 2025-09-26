@@ -315,7 +315,7 @@ export function ResourceSummary({
               ) : (
                 <div className="space-y-3">
                   {medications.map((med, index) => {
-                    const isHighlighted = isResourceHighlighted(med.source?.id, 'MedicationRequest')
+                    const isHighlighted = isResourceHighlighted(med.source?.id || '', 'MedicationRequest')
                     return (
                       <div key={index} className={`flex items-center justify-between p-4 border rounded-lg transition-all duration-200 ${getHighlightStyles(isHighlighted)}`}>
                       <div className="flex-1">
@@ -360,7 +360,7 @@ export function ResourceSummary({
               ) : (
                 <div className="space-y-3">
                   {conditions.map((condition, index) => {
-                    const isHighlighted = isResourceHighlighted(condition.source?.id, 'Condition')
+                    const isHighlighted = isResourceHighlighted(condition.source?.id || '', 'Condition')
                     return (
                       <div key={index} className={`flex items-center justify-between p-4 border rounded-lg transition-all duration-200 ${getHighlightStyles(isHighlighted)}`}>
                       <div className="flex-1">

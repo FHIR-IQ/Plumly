@@ -37,7 +37,8 @@
       "Bash(specify init:*)",
       "Bash(python -m uv tool run:*)",
       "Bash(/bashes)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(vercel:*)"
     ],
     "deny": [],
     "ask": []

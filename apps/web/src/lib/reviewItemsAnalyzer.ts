@@ -191,7 +191,7 @@ export function analyzeLabs(labValues: ProcessedLabValue[]): ReviewItem[] {
           title: `Abnormal ${lab.display}`,
           description: `${lab.value} ${lab.unit} (Normal: ${lab.referenceRange.low || 'N/A'}-${lab.referenceRange.high || 'N/A'})`,
           details: `Lab result is outside normal reference range. Date: ${new Date(lab.date).toLocaleDateString()}`,
-          resourceRef: lab.source?.reference,
+          resourceRef: `Observation/${lab.source?.id || 'unknown'}`,
           chartLink: {
             tab: 'lab-trends',
             code: lab.loincCode
@@ -219,7 +219,7 @@ export function analyzeLabs(labValues: ProcessedLabValue[]): ReviewItem[] {
               title: `Significant ${lab.display} Change`,
               description: `${direction} ${percentChange.toFixed(1)}% from ${prevValue} to ${currentValue} ${lab.unit}`,
               details: `Significant change from ${new Date(prevLab.date).toLocaleDateString()} to ${new Date(lab.date).toLocaleDateString()}`,
-              resourceRef: lab.source?.reference,
+              resourceRef: `Observation/${lab.source?.id || 'unknown'}`,
               chartLink: {
                 tab: 'lab-trends',
                 code: lab.loincCode
@@ -249,9 +249,14 @@ export function analyzeMedications(medications: ProcessedMedication[]): ReviewIt
       const med2 = activeMeds[j]
 
       // Check for known interactions
+      const med1Code = (med1 as any).rxNormCode
+      const med2Code = (med2 as any).rxNormCode
+
+      if (!med1Code || !med2Code) continue
+
       const interaction = MEDICATION_INTERACTIONS.find(interaction =>
-        (interaction.rxNormCodes.includes(med1.rxNormCode) &&
-         interaction.rxNormCodes.includes(med2.rxNormCode))
+        (interaction.rxNormCodes.includes(med1Code) &&
+         interaction.rxNormCodes.includes(med2Code))
       )
 
       if (interaction) {
@@ -265,13 +270,13 @@ export function analyzeMedications(medications: ProcessedMedication[]): ReviewIt
           chartLink: {
             tab: 'med-timeline'
           },
-          actionRequired: interaction.severity === 'high',
+          actionRequired: interaction.severity === 'medium',
           dateIdentified: new Date().toISOString()
         })
       }
 
       // Check for duplicate medications (same RxNorm code)
-      if (med1.rxNormCode === med2.rxNormCode) {
+      if (med1Code && med2Code && med1Code === med2Code) {
         items.push({
           id: `med-duplicate-${med1.source?.id}-${med2.source?.id}`,
           type: 'med-interaction',
@@ -303,7 +308,7 @@ export function analyzeMedications(medications: ProcessedMedication[]): ReviewIt
           title: 'Long-term Active Medication',
           description: `${med.name} active for ${Math.round(daysSinceOrdered)} days`,
           details: 'Review medication adherence and consider refill needs',
-          resourceRef: med.source?.reference,
+          resourceRef: `MedicationRequest/${med.source?.id || 'unknown'}`,
           chartLink: {
             tab: 'medications'
           },
