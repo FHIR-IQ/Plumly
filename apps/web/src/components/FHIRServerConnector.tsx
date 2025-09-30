@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -21,10 +21,48 @@ import {
   Wifi,
   WifiOff,
   CheckCircle,
-  XCircle
+  XCircle,
+  RefreshCw,
+  Users
 } from 'lucide-react'
 import { fetchPatientEverything, testConnection, clearCache, type FHIRServerError } from '@/lib/fhirServerClient'
 import type { FHIRBundle } from '@/types/fhir'
+
+// Public FHIR test servers
+const PUBLIC_FHIR_SERVERS = [
+  {
+    id: 'firely',
+    name: 'Firely Public Server',
+    url: 'https://server.fire.ly',
+    description: 'Public test server by Firely'
+  },
+  {
+    id: 'smarthealthit',
+    name: 'SMART Health IT',
+    url: 'https://r4.smarthealthit.org',
+    description: 'SMART on FHIR test server'
+  },
+  {
+    id: 'hapi',
+    name: 'HAPI FHIR Public',
+    url: 'https://hapi.fhir.org/baseR4',
+    description: 'Public HAPI FHIR test server'
+  },
+  {
+    id: 'local',
+    name: 'Local Development',
+    url: 'http://localhost:8080/fhir',
+    description: 'Local Docker FHIR server'
+  }
+]
+
+interface PatientSummary {
+  id: string
+  name: string
+  gender?: string
+  birthDate?: string
+  identifier?: string
+}
 
 interface FHIRServerConnectorProps {
   onDataLoaded: (bundle: FHIRBundle) => void
@@ -38,11 +76,17 @@ export function FHIRServerConnector({
   className = ''
 }: FHIRServerConnectorProps) {
   // Form state
-  const [serverUrl, setServerUrl] = useState('http://localhost:8080/fhir')
+  const [selectedServer, setSelectedServer] = useState(PUBLIC_FHIR_SERVERS[2]) // Default to HAPI
+  const [serverUrl, setServerUrl] = useState(PUBLIC_FHIR_SERVERS[2].url)
   const [patientId, setPatientId] = useState('')
   const [authToken, setAuthToken] = useState('')
   const [isDemoMode, setIsDemoMode] = useState(true)
   const [showAuth, setShowAuth] = useState(false)
+
+  // Patient list state
+  const [patients, setPatients] = useState<PatientSummary[]>([])
+  const [isLoadingPatients, setIsLoadingPatients] = useState(false)
+  const [showPatientList, setShowPatientList] = useState(false)
 
   // Loading states
   const [isLoading, setIsLoading] = useState(false)
@@ -70,6 +114,58 @@ export function FHIRServerConnector({
     }
   }
 
+  // Handle server selection
+  const handleServerSelect = (server: typeof PUBLIC_FHIR_SERVERS[0]) => {
+    setSelectedServer(server)
+    setServerUrl(server.url)
+    setConnectionStatus(null)
+    setServerVersion(null)
+    setPatients([])
+    setPatientId('')
+    setLastError(null)
+  }
+
+  // Load patients from server
+  const loadPatients = async () => {
+    setIsLoadingPatients(true)
+    setLastError(null)
+
+    try {
+      const response = await fetch(`/api/fhir/patients?serverUrl=${encodeURIComponent(serverUrl)}&count=10`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        setLastError({
+          code: 'SERVER_ERROR',
+          message: data.error || 'Failed to load patients',
+          details: data.details
+        })
+        setPatients([])
+      } else {
+        setPatients(data.patients || [])
+        setShowPatientList(true)
+        if (data.patients?.length > 0) {
+          setConnectionStatus('connected')
+        }
+      }
+    } catch (error: any) {
+      setLastError({
+        code: 'NETWORK_ERROR',
+        message: 'Failed to load patient list',
+        details: error.message
+      })
+      setPatients([])
+    } finally {
+      setIsLoadingPatients(false)
+    }
+  }
+
+  // Handle patient selection
+  const handlePatientSelect = (patient: PatientSummary) => {
+    setPatientId(patient.id)
+    setShowPatientList(false)
+  }
+
   // Handle connection test
   const handleTestConnection = async () => {
     setIsTestingConnection(true)
@@ -80,6 +176,8 @@ export function FHIRServerConnector({
     if (result.success) {
       setConnectionStatus('connected')
       setServerVersion(result.version || null)
+      // Auto-load patients after successful connection
+      setTimeout(() => loadPatients(), 500)
     } else {
       setConnectionStatus('error')
       setLastError(result.error || null)
@@ -149,21 +247,44 @@ export function FHIRServerConnector({
           FHIR Server Connection
         </CardTitle>
         <CardDescription>
-          Connect to a FHIR server to fetch patient data using the $everything operation
+          Connect to public FHIR test servers and browse available patients
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {/* Server URL Input */}
+        {/* Server Selection */}
         <div className="space-y-2">
-          <Label htmlFor="server-url">FHIR Server URL</Label>
+          <Label>Select FHIR Server</Label>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            {PUBLIC_FHIR_SERVERS.map((server) => (
+              <button
+                key={server.id}
+                onClick={() => handleServerSelect(server)}
+                className={`p-3 text-left border rounded-lg transition-all ${
+                  selectedServer.id === server.id
+                    ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+                }`}
+              >
+                <div className="font-medium text-sm">{server.name}</div>
+                <div className="text-xs text-gray-500 mt-1">{server.description}</div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Server URL Display & Test */}
+        <div className="space-y-2">
+          <Label htmlFor="server-url">Server URL</Label>
           <div className="flex gap-2">
             <Input
               id="server-url"
               type="url"
-              placeholder="http://localhost:8080/fhir"
               value={serverUrl}
-              onChange={(e) => setServerUrl(e.target.value)}
-              className="flex-1"
+              onChange={(e) => {
+                setServerUrl(e.target.value)
+                setSelectedServer({ id: 'custom', name: 'Custom', url: e.target.value, description: 'Custom server' })
+              }}
+              className="flex-1 font-mono text-sm"
             />
             <Button
               variant="outline"
@@ -202,16 +323,77 @@ export function FHIRServerConnector({
           )}
         </div>
 
-        {/* Patient ID Input */}
+        {/* Patient Selection */}
         <div className="space-y-2">
-          <Label htmlFor="patient-id">Patient ID</Label>
-          <Input
-            id="patient-id"
-            type="text"
-            placeholder="example-patient-123"
-            value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
-          />
+          <div className="flex items-center justify-between">
+            <Label>Patient Selection</Label>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={loadPatients}
+              disabled={isLoadingPatients || !serverUrl}
+              className="flex items-center gap-2"
+            >
+              {isLoadingPatients ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                <>
+                  <Users className="h-4 w-4" />
+                  Browse Patients
+                </>
+              )}
+            </Button>
+          </div>
+
+          {/* Patient List */}
+          {showPatientList && patients.length > 0 && (
+            <div className="border rounded-lg p-2 max-h-64 overflow-y-auto bg-white">
+              <div className="text-xs text-gray-500 mb-2 px-2">
+                Select a patient (showing top {patients.length}):
+              </div>
+              {patients.map((patient) => (
+                <button
+                  key={patient.id}
+                  onClick={() => handlePatientSelect(patient)}
+                  className={`w-full text-left px-3 py-2 rounded hover:bg-blue-50 transition-colors ${
+                    patientId === patient.id ? 'bg-blue-100 border border-blue-300' : ''
+                  }`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium text-sm">{patient.name}</div>
+                      <div className="text-xs text-gray-500 space-x-2">
+                        <span>ID: {patient.id}</span>
+                        {patient.gender && <span>• {patient.gender}</span>}
+                        {patient.birthDate && <span>• Born {patient.birthDate}</span>}
+                      </div>
+                    </div>
+                    {patientId === patient.id && (
+                      <CheckCircle className="h-4 w-4 text-blue-500 flex-shrink-0 ml-2" />
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Manual Patient ID Input */}
+          <div>
+            <Label htmlFor="patient-id" className="text-xs text-gray-600">
+              Or enter Patient ID manually:
+            </Label>
+            <Input
+              id="patient-id"
+              type="text"
+              placeholder="example-patient-123"
+              value={patientId}
+              onChange={(e) => setPatientId(e.target.value)}
+              className="mt-1"
+            />
+          </div>
         </div>
 
         {/* Authentication (collapsible) */}
@@ -350,12 +532,14 @@ export function FHIRServerConnector({
           </Alert>
         )}
 
-        {/* Info about $everything operation */}
-        <div className="text-xs text-gray-500 space-y-1">
-          <p>• Uses FHIR Patient/$everything operation to fetch all related resources</p>
+        {/* Info about public servers */}
+        <div className="text-xs text-gray-500 space-y-1 bg-gray-50 p-3 rounded border border-gray-200">
+          <p className="font-medium text-gray-700 mb-1">ℹ️ About Public Test Servers:</p>
+          <p>• These are open FHIR test servers for development and testing</p>
+          <p>• Uses Patient/$everything operation to fetch comprehensive data</p>
           <p>• Data is cached for 15 minutes to reduce server load</p>
-          <p>• Demo mode replaces all PHI with synthetic data</p>
-          <p>• Falls back to file upload if server connection fails</p>
+          <p>• Demo mode sanitizes all personal health information (PHI)</p>
+          <p>• Some servers may be slow or have rate limits</p>
         </div>
       </CardContent>
     </Card>
